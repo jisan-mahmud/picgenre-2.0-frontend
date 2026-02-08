@@ -1,8 +1,8 @@
 import React from 'react';
-import { useTheme } from '../hooks/useTheme';
+import { Upload, Zap, Image as ImageIcon, Code, FileText, File, Video, Layers, ArrowRight, Key, Terminal } from 'lucide-react';
 
 export default function Home() {
-    const { theme, toggleTheme } = useTheme();
+
 
     return (
         <div>
@@ -26,40 +26,27 @@ export default function Home() {
                             MetaForge uses advanced AI to analyze Images, SVGs, and Docs, creating SEO-ready and developer-friendly metadata in seconds.
                         </p>
                         <div className="flex flex-col sm:flex-row items-center gap-4 w-full justify-center">
-                            <button className="w-full sm:w-auto flex items-center justify-center gap-2 min-w-50 h-14 rounded-xl bg-primary text-white text-lg font-bold shadow-lg shadow-primary/20 hover:scale-[1.02] transition-transform">
-                                <span className="material-symbols-outlined">upload_file</span>
-                                Upload Files
-                            </button>
                             <button className="w-full sm:w-auto flex items-center justify-center gap-2 min-w-50 h-14 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-lg font-bold hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors">
-                                <span className="material-symbols-outlined">bolt</span>
+                                <Zap className="w-6 h-6" />
                                 Try with Sample
                             </button>
                         </div>
-                        {/* Supporting Assets Preview */}
-                        <div className="mt-16 w-full max-w-5xl rounded-2xl border border-slate-200 dark:border-slate-800 bg-white/50 dark:bg-slate-900/50 p-4 backdrop-blur-sm shadow-2xl overflow-hidden">
-                            <div className="flex items-center gap-2 mb-4 px-2">
-                                <div className="flex gap-1.5">
-                                    <div className="w-3 h-3 rounded-full bg-red-400"></div>
-                                    <div className="w-3 h-3 rounded-full bg-amber-400"></div>
-                                    <div className="w-3 h-3 rounded-full bg-emerald-400"></div>
-                                </div>
-                                <div className="flex-1 bg-slate-100 dark:bg-slate-800 rounded py-1 px-4 text-[10px] text-slate-500 font-mono text-center mx-4">
-                                    metaforge.ai/v1/generator
-                                </div>
+                        {/* Stats Grid */}
+                        <div className="mt-16 w-full max-w-5xl grid grid-cols-1 md:grid-cols-3 gap-6">
+                            <div className="p-8 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white/50 dark:bg-slate-900/50 backdrop-blur-sm shadow-lg hover:shadow-xl hover:border-primary/50 hover:-translate-y-1 transition-all group">
+                                <div className="text-4xl font-black text-primary mb-2 group-hover:scale-110 transition-transform">2.4s</div>
+                                <div className="text-sm font-semibold text-slate-900 dark:text-white mb-1">Average Processing Time</div>
+                                <div className="text-xs text-slate-500">Lightning-fast AI analysis</div>
                             </div>
-                            <div className="aspect-video w-full rounded-lg bg-slate-100 dark:bg-[#0a0b16] flex items-center justify-center relative group">
-                                <div
-                                    className="absolute inset-0 bg-cover bg-center opacity-40 mix-blend-overlay grayscale group-hover:grayscale-0 transition-all duration-700"
-                                    data-alt="Abstract glowing network visualization and data flow patterns"
-                                    style={{
-                                        backgroundImage:
-                                            "url('https://lh3.googleusercontent.com/aida-public/AB6AXuDg2Nrf7qtQQU2L73WrJ0-X2L6qLeZcRC8RA4L6CBS0BTgDy-poo0Sa_Sw0LV4iAcQFntgJnPw2_SlrmLwSbJKEvAC8bX5X76-_o8MOmnvqhStbqfjsrWa2P_jbsiccC0QMFDvjB5TYtulhkuyuL1voupGf4fksrS2TnbVcfw1rUyKwwnVjT9qHj_QU7NozTtRUuwfrQAukUbcASpbNggotnGuCFC0j_hkRniXzQlkNm7XqVcrL-j39yjGzqBOaG9phrDtKK0nutDyJ')",
-                                    }}
-                                ></div>
-                                <div className="flex flex-col items-center gap-4 z-10">
-                                    <span className="material-symbols-outlined text-6xl text-primary animate-pulse">cloud_upload</span>
-                                    <p className="text-sm font-medium text-slate-400">Drag and drop assets here to analyze</p>
-                                </div>
+                            <div className="p-8 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white/50 dark:bg-slate-900/50 backdrop-blur-sm shadow-lg hover:shadow-xl hover:border-primary/50 hover:-translate-y-1 transition-all group">
+                                <div className="text-4xl font-black text-primary mb-2 group-hover:scale-110 transition-transform">98%</div>
+                                <div className="text-sm font-semibold text-slate-900 dark:text-white mb-1">Accuracy Rate</div>
+                                <div className="text-xs text-slate-500">Production-grade quality</div>
+                            </div>
+                            <div className="p-8 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white/50 dark:bg-slate-900/50 backdrop-blur-sm shadow-lg hover:shadow-xl hover:border-primary/50 hover:-translate-y-1 transition-all group">
+                                <div className="text-4xl font-black text-primary mb-2 group-hover:scale-110 transition-transform">50+</div>
+                                <div className="text-sm font-semibold text-slate-900 dark:text-white mb-1">File Formats</div>
+                                <div className="text-xs text-slate-500">Images, docs, and more</div>
                             </div>
                         </div>
                     </div>
@@ -72,23 +59,23 @@ export default function Home() {
                         </p>
                         <div className="flex flex-wrap justify-center gap-4 md:gap-8">
                             <div className="flex items-center gap-3 px-5 py-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm hover:border-primary/50 transition-colors group">
-                                <span className="material-symbols-outlined text-primary group-hover:scale-110 transition-transform">image</span>
+                                <ImageIcon className="w-6 h-6 text-primary group-hover:scale-110 transition-transform" />
                                 <span className="text-sm font-semibold">PNG / JPG</span>
                             </div>
                             <div className="flex items-center gap-3 px-5 py-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm hover:border-primary/50 transition-colors group">
-                                <span className="material-symbols-outlined text-primary group-hover:scale-110 transition-transform">code</span>
+                                <Code className="w-6 h-6 text-primary group-hover:scale-110 transition-transform" />
                                 <span className="text-sm font-semibold">SVG</span>
                             </div>
                             <div className="flex items-center gap-3 px-5 py-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm hover:border-primary/50 transition-colors group">
-                                <span className="material-symbols-outlined text-primary group-hover:scale-110 transition-transform">picture_as_pdf</span>
+                                <FileText className="w-6 h-6 text-primary group-hover:scale-110 transition-transform" />
                                 <span className="text-sm font-semibold">PDF</span>
                             </div>
                             <div className="flex items-center gap-3 px-5 py-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm hover:border-primary/50 transition-colors group">
-                                <span className="material-symbols-outlined text-primary group-hover:scale-110 transition-transform">description</span>
+                                <File className="w-6 h-6 text-primary group-hover:scale-110 transition-transform" />
                                 <span className="text-sm font-semibold">DOCX</span>
                             </div>
                             <div className="flex items-center gap-3 px-5 py-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm hover:border-primary/50 transition-colors group">
-                                <span className="material-symbols-outlined text-primary group-hover:scale-110 transition-transform">movie</span>
+                                <Video className="w-6 h-6 text-primary group-hover:scale-110 transition-transform" />
                                 <span className="text-sm font-semibold">MP4</span>
                             </div>
                         </div>
@@ -107,7 +94,7 @@ export default function Home() {
                             {/* Feature 1 */}
                             <div className="flex flex-col gap-6 p-8 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/40 hover:bg-slate-50 dark:hover:bg-slate-900 transition-all group">
                                 <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center text-primary group-hover:bg-primary group-hover:text-white transition-all">
-                                    <span className="material-symbols-outlined text-3xl">layers</span>
+                                    <Layers className="w-8 h-8" />
                                 </div>
                                 <div className="space-y-3">
                                     <h3 className="text-xl font-bold">Batch Processing</h3>
@@ -118,14 +105,14 @@ export default function Home() {
                                 <div className="mt-auto pt-4">
                                     <a className="text-primary text-sm font-bold flex items-center gap-1 group-hover:gap-2 transition-all" href="#">
                                         Learn more
-                                        <span className="material-symbols-outlined text-xs">arrow_forward</span>
+                                        <ArrowRight className="w-3 h-3" />
                                     </a>
                                 </div>
                             </div>
                             {/* Feature 2 */}
                             <div className="flex flex-col gap-6 p-8 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/40 hover:bg-slate-50 dark:hover:bg-slate-900 transition-all group">
                                 <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center text-primary group-hover:bg-primary group-hover:text-white transition-all">
-                                    <span className="material-symbols-outlined text-3xl">key</span>
+                                    <Key className="w-8 h-8" />
                                 </div>
                                 <div className="space-y-3">
                                     <h3 className="text-xl font-bold">Bring Your Own AI Key</h3>
@@ -136,14 +123,14 @@ export default function Home() {
                                 <div className="mt-auto pt-4">
                                     <a className="text-primary text-sm font-bold flex items-center gap-1 group-hover:gap-2 transition-all" href="#">
                                         Setup guide
-                                        <span className="material-symbols-outlined text-xs">arrow_forward</span>
+                                        <ArrowRight className="w-3 h-3" />
                                     </a>
                                 </div>
                             </div>
                             {/* Feature 3 */}
                             <div className="flex flex-col gap-6 p-8 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/40 hover:bg-slate-50 dark:hover:bg-slate-900 transition-all group">
                                 <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center text-primary group-hover:bg-primary group-hover:text-white transition-all">
-                                    <span className="material-symbols-outlined text-3xl">terminal</span>
+                                    <Terminal className="w-8 h-8" />
                                 </div>
                                 <div className="space-y-3">
                                     <h3 className="text-xl font-bold">Export Ready Metadata</h3>
@@ -154,7 +141,7 @@ export default function Home() {
                                 <div className="mt-auto pt-4">
                                     <a className="text-primary text-sm font-bold flex items-center gap-1 group-hover:gap-2 transition-all" href="#">
                                         API Docs
-                                        <span className="material-symbols-outlined text-xs">arrow_forward</span>
+                                        <ArrowRight className="w-3 h-3" />
                                     </a>
                                 </div>
                             </div>

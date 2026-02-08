@@ -1,6 +1,7 @@
 import React, { useState } from 'react'
 import { useTheme } from '../../hooks/useTheme'
-import { Link } from 'react-router-dom';
+import { Link } from 'react-router-dom'
+import { Sun, Moon, Rocket, Menu, X } from 'lucide-react'
 
 export default function Header() {
     const { theme, toggleTheme } = useTheme();
@@ -27,15 +28,13 @@ export default function Header() {
                             className="p-2 rounded-lg hover:bg-slate-200 dark:hover:bg-slate-800 transition-colors"
                             aria-label="Toggle theme"
                         >
-                            <span className="material-symbols-outlined text-lg sm:text-xl">
-                                {theme === 'dark' ? 'light_mode' : 'dark_mode'}
-                            </span>
+                            {theme === 'dark' ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
                         </button>
                         <Link to="/login" className="hidden sm:flex text-sm font-semibold px-3 sm:px-4 py-2 rounded-lg hover:bg-slate-200 dark:hover:bg-slate-800 transition-colors">
                             Sign In
                         </Link>
                         <Link to="/workspace" className="hidden sm:flex bg-primary text-white text-xs sm:text-sm font-bold px-3 sm:px-5 py-2 rounded-lg hover:bg-blue-700 transition-all items-center gap-1 sm:gap-2">
-                            <span className="material-symbols-outlined text-sm">rocket_launch</span>
+                            <Rocket className="w-4 h-4" />
                             <span className="hidden sm:inline">Get Started</span>
                             <span className="sm:hidden">Start</span>
                         </Link>
@@ -44,9 +43,7 @@ export default function Header() {
                             className="md:hidden p-2 rounded-lg hover:bg-slate-200 dark:hover:bg-slate-800 transition-colors"
                             aria-label="Toggle menu"
                         >
-                            <span className="material-symbols-outlined text-xl">
-                                {isMenuOpen ? 'close' : 'menu'}
-                            </span>
+                            {isMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
                         </button>
                     </div>
                 </div>
