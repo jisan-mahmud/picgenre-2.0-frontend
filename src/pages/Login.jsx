@@ -1,9 +1,25 @@
-import React from 'react'
+import React, { useState } from 'react'
 import { useTheme } from '../hooks/useTheme'
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+import { loginWithGoogle } from '../services/authService';
 
 export default function Login() {
     const { theme, toggleTheme } = useTheme();
+    const navigate = useNavigate();
+    const [loading, setLoading] = useState(false);
+
+    const handleGoogleLogin = async () => {
+        try {
+            setLoading(true);
+            await loginWithGoogle();
+            navigate('/workspace');
+        } catch (error) {
+            console.error('Login failed:', error);
+            alert('Login failed. Please try again.');
+        } finally {
+            setLoading(false);
+        }
+    };
 
     return (
         <div className='h-screen bg-background-light dark:bg-background-dark flex flex-col'>
@@ -42,7 +58,7 @@ export default function Login() {
                             Sign in to generate perfect metadata with AI
                         </p>
                         <div className="w-full flex justify-center py-2">
-                            <button className="w-full flex cursor-pointer items-center justify-center overflow-hidden rounded-lg h-14 px-6 bg-slate-900 dark:bg-slate-100 text-white dark:text-slate-900 hover:bg-slate-800 dark:hover:bg-slate-200 transition-all duration-200 gap-3 text-base font-bold leading-normal tracking-tight shadow-lg">
+                            <button onClick={handleGoogleLogin} disabled={loading} className="w-full flex cursor-pointer items-center justify-center overflow-hidden rounded-lg h-14 px-6 bg-slate-900 dark:bg-slate-100 text-white dark:text-slate-900 hover:bg-slate-800 dark:hover:bg-slate-200 transition-all duration-200 gap-3 text-base font-bold leading-normal tracking-tight shadow-lg disabled:opacity-50 disabled:cursor-not-allowed">
                                 <div className="flex items-center justify-center" data-icon="GoogleLogo">
                                     <svg height="20" viewBox="0 0 20 20" width="20" xmlns="http://www.w3.org/2000/svg">
                                         <path d="M19.6 10.2273C19.6 9.51818 19.5364 8.84091 19.4182 8.18182H10V12.05H15.3818C15.15 13.3 14.4409 14.3591 13.3818 15.0682V17.5773H16.6227C18.5182 15.8318 19.6 13.2682 19.6 10.2273Z" fill="#4285F4"></path>
@@ -51,7 +67,7 @@ export default function Login() {
                                         <path d="M10 3.96818C11.4682 3.96818 12.7818 4.47273 13.8136 5.46364L16.6909 2.58636C14.9591 0.981818 12.6955 0 10 0C6.08182 0 2.7 2.22273 1.05 5.5L4.39091 8.09091C5.18182 5.72727 7.39091 3.96818 10 3.96818Z" fill="#EA4335"></path>
                                     </svg>
                                 </div>
-                                <span>Continue with Google</span>
+                                <span>{loading ? 'Signing in...' : 'Continue with Google'}</span>
                             </button>
                         </div>
                         <div className="mt-10 text-center">

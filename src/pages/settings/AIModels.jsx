@@ -8,10 +8,7 @@ export default function AIModels() {
                     <p className="text-slate-900 dark:text-white text-4xl font-black leading-tight tracking-[-0.033em]">Groq AI Configuration</p>
                     <p className="text-slate-500 dark:text-[#9296c9] text-base font-normal leading-normal max-w-lg">Manage your Groq API credentials and default model preferences for high-performance inference.</p>
                 </div>
-                <div className="flex gap-3">
-                    <button className="flex items-center justify-center rounded-lg h-10 px-6 border border-slate-300 dark:border-[#323767] text-slate-700 dark:text-white text-sm font-bold transition-colors hover:bg-slate-100 dark:hover:bg-[#1c1f3d]">
-                        Reset Defaults
-                    </button>
+                <div className="flex">
                     <button className="flex items-center justify-center rounded-lg h-10 px-6 bg-primary text-white text-sm font-bold transition-all hover:brightness-110 shadow-lg shadow-primary/20">
                         Save Configuration
                     </button>
@@ -40,23 +37,14 @@ export default function AIModels() {
                         </div>
                         <div className="flex flex-col gap-2">
                             <label className="text-sm font-semibold text-slate-700 dark:text-[#9296c9]">API Key</label>
-                            <div className="flex gap-2">
+                            <div className="flex">
                                 <div className="relative flex-1">
                                     <input className="w-full bg-slate-50 dark:bg-[#1c1f3d] border border-slate-200 dark:border-[#323767] text-slate-900 dark:text-white rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-primary focus:border-transparent font-mono" placeholder="gsk_••••••••••••••••••••••••" type="password" defaultValue="gsk_y293kd02lS92kd92kd02lS92kd" />
                                     <button className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white">
                                         <span className="material-symbols-outlined text-[20px]">visibility</span>
                                     </button>
                                 </div>
-                                <button className="flex items-center justify-center gap-2 px-4 rounded-lg bg-primary/20 text-primary border border-primary/30 font-bold text-sm hover:bg-primary/30 transition-colors min-w-35">
-                                    <span className="material-symbols-outlined text-[18px]">verified_user</span>
-                                    Test Button
-                                </button>
                             </div>
-                        </div>
-                        <div className="flex flex-col gap-2">
-                            <label className="text-sm font-semibold text-slate-700 dark:text-[#9296c9]">Max Requests</label>
-                            <input className="w-full bg-slate-50 dark:bg-[#1c1f3d] border border-slate-200 dark:border-[#323767] text-slate-900 dark:text-white rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-primary focus:border-transparent" placeholder="e.g. 1000" type="number" defaultValue="1000" />
-                            <p className="text-[11px] text-slate-500 dark:text-[#9296c9] mt-1">Maximum concurrent or total requests allowed per session.</p>
                         </div>
                     </div>
                 </div>
