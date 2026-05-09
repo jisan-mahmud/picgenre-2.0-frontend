@@ -2,16 +2,19 @@ import React, { useState } from 'react'
 import { useTheme } from '../hooks/useTheme'
 import { Link, useNavigate } from 'react-router-dom';
 import { loginWithGoogle } from '../services/authService';
+import { useAuth } from '../contexts/AuthContext';
 
 export default function Login() {
     const { theme, toggleTheme } = useTheme();
+    const { login } = useAuth();
     const navigate = useNavigate();
     const [loading, setLoading] = useState(false);
 
     const handleGoogleLogin = async () => {
         try {
             setLoading(true);
-            await loginWithGoogle();
+            const tokens = await loginWithGoogle();
+            login(tokens);
             navigate('/workspace');
         } catch (error) {
             console.error('Login failed:', error);
