@@ -8,10 +8,6 @@ export default function History() {
                     <div className="flex flex-col gap-6">
                         <div className="flex items-center justify-between px-2">
                             <h1 className="text-slate-900 dark:text-white text-3xl font-black leading-tight tracking-tight">Batch History</h1>
-                            <button className="text-primary hover:underline text-sm font-semibold flex items-center gap-1">
-                                Download CSV
-                                <span className="material-symbols-outlined text-sm">download</span>
-                            </button>
                         </div>
                         <div className="overflow-hidden rounded-xl border border-slate-200 dark:border-[#323767] bg-white dark:bg-[#111222] shadow-sm">
                             <div className="overflow-x-auto">

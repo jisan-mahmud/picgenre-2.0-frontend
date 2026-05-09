@@ -6,12 +6,13 @@ export const loginWithGoogle = async () => {
   const result = await signInWithPopup(auth, googleProvider);
   const firebaseToken = await result.user.getIdToken();
   console.log(firebaseToken)
-  const { data } = await axiosPublic.post('/v1/accounts/auth/firebase-google/', { 
-    idToken: firebaseToken 
+  const { data } = await axiosPublic.post('/v1/accounts/auth/firebase-google/', {
+    idToken: firebaseToken
   });
 
-  localStorage.setItem('accessToken', data.refresh);
-  localStorage.setItem('refreshToken', data.access);
-  
-  return data;
+  // Return tokens instead of storing them directly
+  return {
+    access: data.refresh, // Note: API returns refresh as access, access as refresh - adjust based on your API
+    refresh: data.access
+  };
 };

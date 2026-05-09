@@ -18,10 +18,20 @@ export const axiosPrivate = axios.create({
   },
 });
 
+// Function to get access token - will be set by AuthContext
+let getAccessToken = () => localStorage.getItem('accessToken');
+let getRefreshToken = () => localStorage.getItem('refreshToken');
+
+// Function to set token getters from AuthContext
+export const setTokenGetters = (accessTokenGetter, refreshTokenGetter) => {
+  getAccessToken = accessTokenGetter;
+  getRefreshToken = refreshTokenGetter;
+};
+
 // Request interceptor to add access token
 axiosPrivate.interceptors.request.use(
   (config) => {
-    const token = localStorage.getItem('accessToken');
+    const token = getAccessToken();
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
@@ -39,7 +49,7 @@ axiosPrivate.interceptors.response.use(
     if (error.response?.status === 401 && !originalRequest._retry) {
       originalRequest._retry = true;
 
-      const refreshToken = localStorage.getItem('refreshToken');
+      const refreshToken = getRefreshToken();
       if (!refreshToken) {
         localStorage.clear();
         window.location.href = '/login';
@@ -48,6 +58,7 @@ axiosPrivate.interceptors.response.use(
 
       try {
         const { data } = await axiosPublic.post('/auth/refresh', { refreshToken });
+        // Update tokens in context/localStorage
         localStorage.setItem('accessToken', data.accessToken);
         originalRequest.headers.Authorization = `Bearer ${data.accessToken}`;
         return axiosPrivate(originalRequest);

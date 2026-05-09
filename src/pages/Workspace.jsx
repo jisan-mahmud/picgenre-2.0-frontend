@@ -4,58 +4,62 @@ import UploadAssets from '../components/workspace/UploadAssets'
 import FileQueue from '../components/workspace/FileQueue'
 import ProcessedFile from '../components/workspace/ProcessedFile'
 import SideBar from '../components/workspace/SideBar'
+import { useProcessedFiles, useRemoveFromQueue, useProcessFiles, useStopProcessing } from '../hooks/useWorkspace'
 
 export default function Workspace() {
-    const [queueFiles, setQueueFiles] = useState([])
-    const [processedFiles, setProcessedFiles] = useState([])
+    const [localQueueFiles, setLocalQueueFiles] = useState([]) // For immediate UI feedback
     const [isProcessing, setIsProcessing] = useState(false)
-    const [stopProcessing, setStopProcessing] = useState(false)
-    const [totalFiles, setTotalFiles] = useState(0)
 
-    const handleUpload = (files) => {
-        setQueueFiles(prev => [...prev, ...files])
+    // TanStack Query hooks
+    const { data: processedFiles = [], isLoading: processedLoading } = useProcessedFiles()
+    const removeFromQueueMutation = useRemoveFromQueue()
+    const processFilesMutation = useProcessFiles()
+    const stopProcessingMutation = useStopProcessing()
+
+    const handleUpload = async (files) => {
+        // Add to local state for immediate UI feedback
+        setLocalQueueFiles(prev => [...prev, ...files])
     }
 
-    const handleRemove = (index) => {
-        setQueueFiles(prev => prev.filter((_, i) => i !== index))
+    const handleRemove = async (index) => {
+        const fileToRemove = localQueueFiles[index]
+
+        // Remove from local state immediately
+        setLocalQueueFiles(prev => prev.filter((_, i) => i !== index))
+
+        // Remove from server queue
+        if (fileToRemove.id) {
+            try {
+                await removeFromQueueMutation.mutateAsync(fileToRemove.id)
+            } catch (error) {
+                console.error('Failed to remove file from queue:', error)
+                // Add back to local state on error
+                setLocalQueueFiles(prev => [...prev.slice(0, index), fileToRemove, ...prev.slice(index)])
+            }
+        }
     }
 
     const handleGenerate = async () => {
-        if (queueFiles.length === 0) return
-        
+        if (localQueueFiles.length === 0) return
+
         setIsProcessing(true)
-        setStopProcessing(false)
-        setTotalFiles(queueFiles.length)
-        
-        // Simulate processing each file
-        for (const file of queueFiles) {
-            if (stopProcessing) break
-            
-            await new Promise(resolve => setTimeout(resolve, 2000))
-            
-            if (stopProcessing) break
-            
-            const processed = {
-                name: file.name,
-                preview: ['jpg', 'jpeg', 'png'].some(ext => file.name.toLowerCase().endsWith(ext)) 
-                    ? URL.createObjectURL(file) 
-                    : null,
-                title: `Generated title for ${file.name.split('.')[0]}`,
-                tags: ['tag1', 'tag2', 'tag3', 'tag4', 'tag5'],
-                platform: 'Adobe Stock'
-            }
-            
-            setProcessedFiles(prev => [...prev, processed])
-            setQueueFiles(prev => prev.slice(1))
+        try {
+            await processFilesMutation.mutateAsync(localQueueFiles)
+            setLocalQueueFiles([]) // Clear local queue on success
+        } catch (error) {
+            console.error('Failed to process files:', error)
+        } finally {
+            setIsProcessing(false)
         }
-        
-        setIsProcessing(false)
-        setStopProcessing(false)
     }
 
-    const handleStop = () => {
-        setStopProcessing(true)
-        setIsProcessing(false)
+    const handleStop = async () => {
+        try {
+            await stopProcessingMutation.mutateAsync()
+            setIsProcessing(false)
+        } catch (error) {
+            console.error('Failed to stop processing:', error)
+        }
     }
 
     return (
@@ -77,16 +81,22 @@ export default function Workspace() {
                                 </div>
                                 <UploadAssets onUpload={handleUpload}/>
                             </div>
-                            <FileQueue files={queueFiles} onRemove={handleRemove}/>
-                            <ProcessedFile files={processedFiles}/>
+                            <FileQueue
+                                files={localQueueFiles}
+                                onRemove={handleRemove}
+                            />
+                            <ProcessedFile
+                                files={processedFiles}
+                            />
                         </div>
-                        <SideBar 
-                            queueCount={queueFiles.length} 
+                        <SideBar
+                            queueCount={localQueueFiles.length}
                             processedCount={processedFiles.length}
-                            totalCount={totalFiles}
-                            onGenerate={handleGenerate} 
-                            onStop={handleStop} 
-                            isProcessing={isProcessing}
+                            totalCount={localQueueFiles.length + processedFiles.length}
+                            onGenerate={handleGenerate}
+                            onStop={handleStop}
+                            isProcessing={isProcessing || processFilesMutation.isPending}
+                            isLoading={processFilesMutation.isPending}
                         />
                     </div>
                 </main>
