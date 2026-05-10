@@ -9,16 +9,25 @@ export default function Login() {
     const { login } = useAuth();
     const navigate = useNavigate();
     const [loading, setLoading] = useState(false);
+    const [errorMessage, setErrorMessage] = useState(null);
 
     const handleGoogleLogin = async () => {
         try {
             setLoading(true);
+            setErrorMessage(null);
             const tokens = await loginWithGoogle();
             login(tokens);
             navigate('/workspace');
         } catch (error) {
             console.error('Login failed:', error);
-            alert('Login failed. Please try again.');
+            
+            // Handle 429 Too Many Requests
+            if (error.response?.status === 429) {
+                const retryAfter = error.response.headers['retry-after'] || 60;
+                setErrorMessage(`Too many login attempts. Please try again in ${retryAfter} seconds.`);
+            } else {
+                setErrorMessage('Login failed. Please try again.');
+            }
         } finally {
             setLoading(false);
         }
@@ -60,6 +69,13 @@ export default function Login() {
                         <p className="text-slate-600 dark:text-slate-400 text-base font-normal leading-normal pb-10 text-center max-w-75">
                             Sign in to generate perfect metadata with AI
                         </p>
+                        {errorMessage && (
+                            <div className="w-full mb-6 p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
+                                <p className="text-red-700 dark:text-red-200 text-sm font-medium text-center">
+                                    {errorMessage}
+                                </p>
+                            </div>
+                        )}
                         <div className="w-full flex justify-center py-2">
                             <button onClick={handleGoogleLogin} disabled={loading} className="w-full flex cursor-pointer items-center justify-center overflow-hidden rounded-lg h-14 px-6 bg-slate-900 dark:bg-slate-100 text-white dark:text-slate-900 hover:bg-slate-800 dark:hover:bg-slate-200 transition-all duration-200 gap-3 text-base font-bold leading-normal tracking-tight shadow-lg disabled:opacity-50 disabled:cursor-not-allowed">
                                 <div className="flex items-center justify-center" data-icon="GoogleLogo">
