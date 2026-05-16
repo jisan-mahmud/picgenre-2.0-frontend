@@ -43,7 +43,7 @@ export default function Shop() {
                                         <span>1 Device Limit</span>
                                     </div>
                                     <div className="flex items-center gap-3 text-sm text-slate-700 dark:text-slate-300">
-                                        <span className="material-symbols-outlined text-primary text-lg">bolt</span>
+                                        <span className="material-symbols-outlined text-primary text-lg">bolt</span> 
                                         <span>10m - 1hr Delivery</span>
                                     </div>
                                 </div>

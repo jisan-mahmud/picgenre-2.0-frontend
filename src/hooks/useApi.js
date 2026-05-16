@@ -23,8 +23,8 @@ export const useLogout = () => {
 
   return useMutation({
     mutationFn: async () => {
-      const response = await axiosPrivate.post('/auth/logout');
-      return response.data;
+      // Frontend-only logout: no API call required.
+      return null;
     },
     onSuccess: () => {
       // Clear all cached data on logout
@@ -36,7 +36,7 @@ export const useLogout = () => {
 export const useRefreshToken = () => {
   return useMutation({
     mutationFn: async (refreshToken) => {
-      const response = await axiosPublic.post('/auth/refresh', { refreshToken });
+      const response = await axiosPublic.post('/v1/accounts/auth/token/refresh/', { refresh: refreshToken });
       return response.data;
     },
   });
@@ -47,7 +47,7 @@ export const useUserProfile = () => {
   return useQuery({
     queryKey: ['user', 'profile'],
     queryFn: async () => {
-      const response = await axiosPrivate.get('/user/profile');
+      const response = await axiosPrivate.get('/v1/profile/');
       return response.data;
     },
     staleTime: 1000 * 60 * 5, // 5 minutes
@@ -59,11 +59,38 @@ export const useUpdateProfile = () => {
 
   return useMutation({
     mutationFn: async (profileData) => {
-      const response = await axiosPrivate.put('/user/profile', profileData);
+      const response = await axiosPrivate.patch('/v1/profile/', profileData, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+      });
       return response.data;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['user', 'profile'] });
+    },
+  });
+};
+
+export const useNotificationSettings = () => {
+  return useQuery({
+    queryKey: ['user', 'notifications'],
+    queryFn: async () => {
+      const response = await axiosPrivate.get('/v1/settings/notification/');
+      return response.data;
+    },
+    staleTime: 1000 * 60 * 5,
+  });
+};
+
+export const useUpdateNotificationSettings = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (data) => {
+      const response = await axiosPrivate.patch('/v1/settings/notification/', data);
+      return response.data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['user', 'notifications'] });
     },
   });
 };
