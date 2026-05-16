@@ -3,7 +3,7 @@ import { Link, Outlet, useLocation } from 'react-router-dom'
 
 export default function SettingsLayout() {
     const location = useLocation();
-    
+
     const isActive = (path) => {
         if (path === '/settings') {
             return location.pathname === '/settings' || location.pathname === '/settings/';
