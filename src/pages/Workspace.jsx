@@ -6,6 +6,7 @@ import ProcessedFile from '../components/workspace/ProcessedFile'
 import SideBar from '../components/workspace/SideBar'
 import Toast from '../components/ui/Toast'
 import { analyzeImage, DEFAULT_PLATFORM, PLATFORMS } from '../utils/geminiService'
+import { convertEpsToJpg } from '../utils/convertEps'
 import { generateCSV, downloadCSV } from '../utils/csvExport'
 
 const GEMINI_API_KEY = import.meta.env.VITE_GEMINI_API_KEY || ''
@@ -80,15 +81,13 @@ export default function Workspace() {
             if (isStoppedRef.current) return
             setStatus(item.id, 'processing')
 
-            if (item.file.name.toLowerCase().endsWith('.eps')) {
-                failedCount++
-                if (!firstError) firstError = 'EPS files are not supported by Gemini'
-                setStatus(item.id, 'failed', firstError)
-                return
-            }
-
             try {
-                const result = await analyzeImage(item.file, platform, customPrompt, GEMINI_API_KEY, settings)
+                let fileToAnalyze = item.file
+                if (item.file.name.toLowerCase().endsWith('.eps')) {
+                    fileToAnalyze = await convertEpsToJpg(item.file)
+                }
+
+                const result = await analyzeImage(fileToAnalyze, platform, customPrompt, GEMINI_API_KEY, settings)
                 setProcessedFiles(prev => [...prev, {
                     ...result,
                     name: item.file.name,
@@ -123,9 +122,17 @@ export default function Workspace() {
             setIsProcessing(false)
         }
 
-        setToast(failedCount > 0
-            ? { message: `${failedCount} file${failedCount > 1 ? 's' : ''} failed and remain in the queue. Error: ${(firstError || 'Unknown').slice(0, 90)} Click Generate to retry.`, type: 'error' }
-            : { message: 'All files processed successfully', type: 'success' })
+        if (failedCount > 0) {
+            const detail = firstError || 'Unknown error'
+            setToast({
+                message: failedCount === 1
+                    ? `${detail} Click Generate to retry.`
+                    : `${failedCount} files failed. ${detail} Click Generate to retry.`,
+                type: 'error',
+            })
+        } else {
+            setToast({ message: 'All files processed successfully', type: 'success' })
+        }
     }
 
     const handleStop = () => {

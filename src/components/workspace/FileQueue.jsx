@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useState } from 'react'
 import { Clock, FileText, Trash2, Loader2, AlertCircle } from 'lucide-react'
 
 const STATUS_BADGES = {
@@ -7,6 +7,13 @@ const STATUS_BADGES = {
 }
 
 export default function FileQueue({ items = [], onRemove, isProcessing = false }) {
+    const [tooltip, setTooltip] = useState(null)
+
+    const showTooltip = (e, text) => {
+        const rect = e.currentTarget.getBoundingClientRect()
+        setTooltip({ text, x: rect.right + 10, y: rect.top + rect.height / 2 })
+    }
+
     const getFileType = (filename) => {
         const ext = filename.split('.').pop().toLowerCase()
         if (['jpg', 'jpeg', 'png'].includes(ext)) return 'Image'
@@ -66,15 +73,19 @@ export default function FileQueue({ items = [], onRemove, isProcessing = false }
                                             <span className="inline-flex items-center px-2 py-1 rounded text-[10px] font-bold bg-slate-100 dark:bg-slate-900/40 text-slate-600 dark:text-slate-300 uppercase tracking-tighter">{getFileType(file.name)}</span>
                                         </td>
                                         <td className="px-6 py-4">
-                                            {badge ? (
-                                                <span
-                                                    title={item.error || badge.label}
-                                                    className={`inline-flex items-center gap-1 px-2 py-1 rounded text-[10px] font-bold uppercase tracking-tighter ${badge.className}`}
-                                                >
-                                                    {badge.icon}
-                                                    {badge.label}
-                                                </span>
-                                            ) : isProcessing ? (
+{badge ? (
+    <div className="flex flex-col gap-1">
+        <span
+            className={`inline-flex w-fit items-center gap-1 px-2 py-1 rounded text-[10px] font-bold uppercase tracking-tighter ${badge.className}`}
+            onMouseEnter={(e) => (item.status === 'failed' && item.error) && showTooltip(e, item.error)}
+            onMouseMove={(e) => (item.status === 'failed' && item.error) && showTooltip(e, item.error)}
+            onMouseLeave={() => setTooltip(null)}
+        >
+            {badge.icon}
+            {badge.label}
+        </span>
+    </div>
+) : isProcessing ? (
                                                 <span className="inline-flex items-center px-2 py-1 rounded text-[10px] font-bold text-slate-500 bg-slate-100 dark:bg-slate-900/40 uppercase tracking-tighter">Queued</span>
                                             ) : null}
                                         </td>
@@ -95,6 +106,17 @@ export default function FileQueue({ items = [], onRemove, isProcessing = false }
                     </tbody>
                 </table>
             </div>
+            {tooltip && (
+                <div
+                    className="fixed z-[100] pointer-events-none"
+                    style={{ left: tooltip.x, top: tooltip.y, transform: 'translateY(-50%)' }}
+                >
+                    <div className="bg-slate-900 dark:bg-slate-800 text-white text-xs rounded-lg shadow-xl border border-slate-700 dark:border-slate-600 px-3 py-2 max-w-80 leading-snug">
+                        <p className="font-bold uppercase tracking-wide text-red-300 mb-0.5">Error</p>
+                        {tooltip.text}
+                    </div>
+                </div>
+            )}
         </div>
     )
 }
