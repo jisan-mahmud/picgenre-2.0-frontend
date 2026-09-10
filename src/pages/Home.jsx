@@ -1,6 +1,7 @@
 import React from 'react';
 import { ArrowRight, Upload, Sparkles, CheckCircle, Layers, Key, Terminal, Clock, Star, MessageSquare, Image as ImageIcon, Code, FileText, File, Video, Diamond, Users, Camera, Globe } from 'lucide-react';
 import { useInView } from '../hooks/useInView';
+import { useFeedbackList } from '../hooks/useApi';
 
 const stats = [
     { value: '2.4s', label: 'Avg Processing Time', desc: 'Lightning-fast AI analysis' },
@@ -32,6 +33,14 @@ function AnimatedSection({ children, className = '', delay = 0 }) {
 }
 
 export default function Home() {
+    const { data: feedbackList, isLoading } = useFeedbackList()
+
+    const getInitials = (name) => {
+        const parts = name.trim().split(/\s+/)
+        if (parts.length === 1) return parts[0][0]?.toUpperCase() || ''
+        return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase()
+    }
+
     return (
         <div>
             <main>
@@ -282,30 +291,51 @@ export default function Home() {
                                 Join thousands of stock contributors who save hours every week with AI-powered metadata generation.
                             </p>
                         </AnimatedSection>
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-8 w-full">
-                            {[
-                                { initials: 'SK', name: 'Sarah K.', role: 'Adobe Stock Contributor', rating: 5, quote: 'I used to spend 20 minutes per image writing metadata. Now it takes 3 seconds. My upload rate has tripled.' },
-                                { initials: 'MR', name: 'Marcus R.', role: 'Shutterstock Artist', rating: 5, quote: 'The AI understands context perfectly — it generates relevant tags I wouldn\'t have thought of. Game changer for my portfolio.' },
-                                { initials: 'AL', name: 'Anna L.', role: 'Freepik Designer', rating: 4, quote: 'Batch processing is incredible. I uploaded 200 files and got perfect metadata for all of them in under a minute.' },
-                            ].map((t, i) => (
-                                <AnimatedSection key={i} delay={i * 100}>
-                                    <div className="h-full p-6 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white/50 dark:bg-slate-900/50 text-left flex flex-col gap-4 hover:-translate-y-1 hover:shadow-lg transition-all duration-300">
-                                        <div className="flex gap-0.5">
-                                            {Array.from({ length: 5 }).map((_, s) => (
-                                                <Star key={s} className={`w-4 h-4 ${s < t.rating ? 'fill-yellow-400 text-yellow-400' : 'fill-slate-200 text-slate-200 dark:fill-slate-700 dark:text-slate-700'}`} />
-                                            ))}
-                                        </div>
-                                        <p className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed">"{t.quote}"</p>
-                                        <div className="flex items-center gap-3 mt-auto pt-2">
-                                            <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary text-sm font-bold">{t.initials}</div>
-                                            <div>
-                                                <p className="text-sm font-bold text-slate-900 dark:text-white">{t.name}</p>
-                                                <p className="text-xs text-slate-500">{t.role}</p>
+                        <div className="flex flex-wrap justify-center gap-6 mt-8 w-full">
+                            {isLoading ? (
+                                Array.from({ length: 3 }).map((_, i) => (
+                                    <AnimatedSection key={i} delay={i * 100}>
+                                        <div className="h-full p-6 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white/50 dark:bg-slate-900/50 flex flex-col gap-4 animate-pulse">
+                                            <div className="flex gap-0.5">
+                                                {Array.from({ length: 5 }).map((_, s) => (
+                                                    <div key={s} className="w-4 h-4 rounded bg-slate-200 dark:bg-slate-700" />
+                                                ))}
+                                            </div>
+                                            <div className="space-y-2">
+                                                <div className="h-3 bg-slate-200 dark:bg-slate-700 rounded w-full" />
+                                                <div className="h-3 bg-slate-200 dark:bg-slate-700 rounded w-4/5" />
+                                            </div>
+                                            <div className="flex items-center gap-3 mt-auto pt-2">
+                                                <div className="w-10 h-10 rounded-full bg-slate-200 dark:bg-slate-700" />
+                                                <div className="space-y-1.5">
+                                                    <div className="h-3 bg-slate-200 dark:bg-slate-700 rounded w-20" />
+                                                    <div className="h-2.5 bg-slate-200 dark:bg-slate-700 rounded w-28" />
+                                                </div>
                                             </div>
                                         </div>
-                                    </div>
-                                </AnimatedSection>
-                            ))}
+                                    </AnimatedSection>
+                                ))
+                            ) : (
+                                feedbackList?.map((t, i) => (
+                                    <AnimatedSection key={t.created_at || i} delay={i * 100} className="w-full sm:w-[320px]">
+                                        <div className="h-full p-6 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white/50 dark:bg-slate-900/50 text-left flex flex-col gap-4 hover:-translate-y-1 hover:shadow-lg transition-all duration-300">
+                                            <div className="flex gap-0.5">
+                                                {Array.from({ length: 5 }).map((_, s) => (
+                                                    <Star key={s} className={`w-4 h-4 ${s < t.rating ? 'fill-yellow-400 text-yellow-400' : 'fill-slate-200 text-slate-200 dark:fill-slate-700 dark:text-slate-700'}`} />
+                                                ))}
+                                            </div>
+                                            <p className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed">"{t.feedback}"</p>
+                                            <div className="flex items-center gap-3 mt-auto pt-2">
+                                                <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary text-sm font-bold">{getInitials(t.name)}</div>
+                                                <div>
+                                                    <p className="text-sm font-bold text-slate-900 dark:text-white">{t.name}</p>
+                                                    <p className="text-xs text-slate-500">{t.contributor_at} Contributor</p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </AnimatedSection>
+                                ))
+                            )}
                         </div>
                         <AnimatedSection delay={300}>
                             <div className="flex flex-col sm:flex-row items-center gap-4 mt-8">

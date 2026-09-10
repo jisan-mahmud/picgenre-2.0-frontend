@@ -95,6 +95,32 @@ export const useUpdateNotificationSettings = () => {
   });
 };
 
+// Feedback hooks (public, no auth)
+export const useFeedbackList = () => {
+  return useQuery({
+    queryKey: ['feedback', 'list'],
+    queryFn: async () => {
+      const response = await axiosPublic.get('/v1/feedback/list/');
+      return response.data;
+    },
+    staleTime: 1000 * 60,
+  });
+};
+
+export const useCreateFeedback = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (data) => {
+      const response = await axiosPublic.post('/v1/feedback/create/', data);
+      return response.data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['feedback', 'list'] });
+    },
+  });
+};
+
 // Generic API hooks
 export const useApiQuery = (key, url, options = {}) => {
   return useQuery({
