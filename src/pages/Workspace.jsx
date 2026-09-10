@@ -1,65 +1,146 @@
-import React, { useState } from 'react'
+import React, { useRef, useState } from 'react'
 import { CloudUpload } from 'lucide-react'
 import UploadAssets from '../components/workspace/UploadAssets'
 import FileQueue from '../components/workspace/FileQueue'
 import ProcessedFile from '../components/workspace/ProcessedFile'
 import SideBar from '../components/workspace/SideBar'
-import { useProcessedFiles, useRemoveFromQueue, useProcessFiles, useStopProcessing } from '../hooks/useWorkspace'
+import Toast from '../components/ui/Toast'
+import { analyzeImage, DEFAULT_PLATFORM, PLATFORMS } from '../utils/geminiService'
+import { generateCSV, downloadCSV } from '../utils/csvExport'
+
+const GEMINI_API_KEY = import.meta.env.VITE_GEMINI_API_KEY || ''
+
+const makePreview = (file) => {
+    const ext = file.name.split('.').pop().toLowerCase()
+    if (['jpg', 'jpeg', 'png'].includes(ext)) {
+        return URL.createObjectURL(file)
+    }
+    return null
+}
+
+let idCounter = 0
+const nextId = () => `file-${Date.now()}-${idCounter++}`
 
 export default function Workspace() {
-    const [localQueueFiles, setLocalQueueFiles] = useState([]) // For immediate UI feedback
+    const [queueItems, setQueueItems] = useState([])
+    const [processedFiles, setProcessedFiles] = useState([])
+    const [platform, setPlatform] = useState(DEFAULT_PLATFORM)
+    const [customPrompt, setCustomPrompt] = useState('')
+    const [settings, setSettings] = useState({ ...PLATFORMS[DEFAULT_PLATFORM] })
     const [isProcessing, setIsProcessing] = useState(false)
+    const [toast, setToast] = useState(null)
+    const isStoppedRef = useRef(false)
 
-    // TanStack Query hooks
-    const { data: processedFiles = [], isLoading: processedLoading } = useProcessedFiles()
-    const removeFromQueueMutation = useRemoveFromQueue()
-    const processFilesMutation = useProcessFiles()
-    const stopProcessingMutation = useStopProcessing()
-
-    const handleUpload = async (files) => {
-        // Add to local state for immediate UI feedback
-        setLocalQueueFiles(prev => [...prev, ...files])
+    const handleUpload = (files) => {
+        const items = files.map((file) => ({
+            id: nextId(),
+            file,
+            status: 'pending',
+            preview: makePreview(file),
+            error: null,
+        }))
+        setQueueItems(prev => [...prev, ...items])
     }
 
-    const handleRemove = async (index) => {
-        const fileToRemove = localQueueFiles[index]
+    const handleRemove = (id) => {
+        const removed = queueItems.find(item => item.id === id)
+        if (removed?.preview) URL.revokeObjectURL(removed.preview)
+        setQueueItems(prev => prev.filter(item => item.id !== id))
+    }
 
-        // Remove from local state immediately
-        setLocalQueueFiles(prev => prev.filter((_, i) => i !== index))
+    const setStatus = (id, status, error = null) => {
+        setQueueItems(prev => prev.map(item => item.id === id ? { ...item, status, error } : item))
+    }
 
-        // Remove from server queue
-        if (fileToRemove.id) {
-            try {
-                await removeFromQueueMutation.mutateAsync(fileToRemove.id)
-            } catch (error) {
-                console.error('Failed to remove file from queue:', error)
-                // Add back to local state on error
-                setLocalQueueFiles(prev => [...prev.slice(0, index), fileToRemove, ...prev.slice(index)])
-            }
-        }
+    const handlePlatformChange = (name) => {
+        setPlatform(name)
+        setSettings({ ...PLATFORMS[name] })
+    }
+
+    const handleSettingsChange = (key, value) => {
+        setSettings(prev => ({ ...prev, [key]: value }))
     }
 
     const handleGenerate = async () => {
-        if (localQueueFiles.length === 0) return
+        const workItems = queueItems.filter(item => item.status !== 'processing')
+        if (workItems.length === 0) return
+
+        if (!GEMINI_API_KEY || GEMINI_API_KEY === 'YOUR_GEMINI_API_KEY_HERE') {
+            setToast({ message: 'Set VITE_GEMINI_API_KEY in .env to use Gemini', type: 'error' })
+            return
+        }
 
         setIsProcessing(true)
+        isStoppedRef.current = false
+
+        let failedCount = 0
+        let firstError = null
+
+        const processItem = async (item) => {
+            if (isStoppedRef.current) return
+            setStatus(item.id, 'processing')
+
+            if (item.file.name.toLowerCase().endsWith('.eps')) {
+                failedCount++
+                if (!firstError) firstError = 'EPS files are not supported by Gemini'
+                setStatus(item.id, 'failed', firstError)
+                return
+            }
+
+            try {
+                const result = await analyzeImage(item.file, platform, customPrompt, GEMINI_API_KEY, settings)
+                setProcessedFiles(prev => [...prev, {
+                    ...result,
+                    name: item.file.name,
+                    preview: item.preview,
+                    platform,
+                }])
+                setQueueItems(prev => prev.filter(i => i.id !== item.id))
+            } catch (error) {
+                failedCount++
+                if (!firstError) firstError = error?.message || 'Unknown error'
+                console.error(`Failed to process ${item.file.name}:`, error)
+                setStatus(item.id, 'failed', firstError)
+            }
+        }
+
         try {
-            await processFilesMutation.mutateAsync(localQueueFiles)
-            setLocalQueueFiles([]) // Clear local queue on success
-        } catch (error) {
-            console.error('Failed to process files:', error)
+            const CONCURRENCY = 3
+            let nextIndex = 0
+
+            const worker = async () => {
+                while (!isStoppedRef.current) {
+                    const idx = nextIndex++
+                    if (idx >= workItems.length) return
+                    await processItem(workItems[idx])
+                }
+            }
+
+            await Promise.all(
+                Array.from({ length: Math.min(CONCURRENCY, workItems.length) }, worker)
+            )
         } finally {
             setIsProcessing(false)
         }
+
+        setToast(failedCount > 0
+            ? { message: `${failedCount} file${failedCount > 1 ? 's' : ''} failed and remain in the queue. Error: ${(firstError || 'Unknown').slice(0, 90)} Click Generate to retry.`, type: 'error' }
+            : { message: 'All files processed successfully', type: 'success' })
     }
 
-    const handleStop = async () => {
-        try {
-            await stopProcessingMutation.mutateAsync()
-            setIsProcessing(false)
-        } catch (error) {
-            console.error('Failed to stop processing:', error)
+    const handleStop = () => {
+        isStoppedRef.current = true
+    }
+
+    const handleExportAll = () => {
+        if (processedFiles.length === 0) {
+            setToast({ message: 'No processed metadata to export', type: 'error' })
+            return
         }
+        const csv = generateCSV(processedFiles)
+        const date = new Date().toISOString().slice(0, 10)
+        downloadCSV(csv, `picgenre-metadata-${date}.csv`)
+        setToast({ message: `Exported ${processedFiles.length} files to CSV`, type: 'success' })
     }
 
     return (
@@ -82,25 +163,33 @@ export default function Workspace() {
                                 <UploadAssets onUpload={handleUpload}/>
                             </div>
                             <FileQueue
-                                files={localQueueFiles}
+                                items={queueItems}
                                 onRemove={handleRemove}
+                                isProcessing={isProcessing}
                             />
                             <ProcessedFile
                                 files={processedFiles}
+                                onExportAll={handleExportAll}
                             />
                         </div>
                         <SideBar
-                            queueCount={localQueueFiles.length}
+                            queueCount={queueItems.length}
                             processedCount={processedFiles.length}
-                            totalCount={localQueueFiles.length + processedFiles.length}
+                            totalCount={queueItems.length + processedFiles.length}
                             onGenerate={handleGenerate}
                             onStop={handleStop}
-                            isProcessing={isProcessing || processFilesMutation.isPending}
-                            isLoading={processFilesMutation.isPending}
+                            isProcessing={isProcessing}
+                            platform={platform}
+                            customPrompt={customPrompt}
+                            settings={settings}
+                            onPlatformChange={handlePlatformChange}
+                            onCustomPromptChange={setCustomPrompt}
+                            onSettingsChange={handleSettingsChange}
                         />
                     </div>
                 </main>
             </div>
+            {toast && <Toast message={toast.message} type={toast.type} onClose={() => setToast(null)} />}
         </div>
     )
 }

@@ -43,7 +43,10 @@ export default function UploadAssets({ onUpload }) {
                 type="file"
                 multiple
                 accept=".jpg,.jpeg,.png,.eps"
-                onChange={(e) => handleFiles(Array.from(e.target.files))}
+                onChange={(e) => {
+                    handleFiles(Array.from(e.target.files))
+                    e.target.value = ''
+                }}
                 className="hidden"
             />
             <div className="size-16 rounded-full bg-primary/5 dark:bg-primary/10 flex items-center justify-center text-primary group-hover:scale-110 transition-transform">
