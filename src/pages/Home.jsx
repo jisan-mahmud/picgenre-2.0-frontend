@@ -1,154 +1,327 @@
 import React from 'react';
-import { Upload, Zap, Image as ImageIcon, Code, FileText, File, Video, Layers, ArrowRight, Key, Terminal } from 'lucide-react';
+import { ArrowRight, Upload, Sparkles, CheckCircle, Layers, Key, Terminal, Clock, Star, MessageSquare, Image as ImageIcon, Code, FileText, File, Video, Diamond, Users, Camera, Globe } from 'lucide-react';
+import { useInView } from '../hooks/useInView';
+
+const stats = [
+    { value: '2.4s', label: 'Avg Processing Time', desc: 'Lightning-fast AI analysis' },
+    { value: '98%', label: 'Accuracy Rate', desc: 'Production-grade quality' },
+    { value: '50+', label: 'File Formats', desc: 'Images, docs, and more' },
+]
+
+const steps = [
+    { num: '01', icon: Upload, title: 'Upload', desc: 'Drag and drop your images, EPS files, or documents into the workspace.' },
+    { num: '02', icon: Sparkles, title: 'AI Analyzes', desc: 'Gemini AI reads and understands the content of every file automatically.' },
+    { num: '03', icon: CheckCircle, title: 'Get Metadata', desc: 'SEO-optimized title, tags, and description ready to copy or export.' },
+]
+
+function AnimatedSection({ children, className = '', delay = 0 }) {
+    const [ref, isInView] = useInView()
+    return (
+        <div
+            ref={ref}
+            className={className}
+            style={{
+                opacity: isInView ? 1 : 0,
+                transform: isInView ? 'translateY(0)' : 'translateY(24px)',
+                transition: `opacity 0.6s ease-out ${delay}ms, transform 0.6s ease-out ${delay}ms`,
+            }}
+        >
+            {children}
+        </div>
+    )
+}
 
 export default function Home() {
-
-
     return (
         <div>
             <main>
-                {/* Hero Section  */}
+                {/* Hero */}
                 <section className="relative pt-20 pb-16 px-6 overflow-hidden">
-                    {/* Decorative Glow */}
-                    <div className="absolute top-0 left-1/2 -translate-x-1/2 w-200 h-100 bg-primary/10 blur-[120px] rounded-full -z-10"></div>
+                    <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[400px] bg-primary/10 blur-[120px] rounded-full -z-10" />
                     <div className="max-w-4xl mx-auto text-center flex flex-col items-center">
-                        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 border border-primary/20 text-primary text-xs font-bold mb-6">
-                            <span className="relative flex h-2 w-2">
-                                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
-                                <span className="relative inline-flex rounded-full h-2 w-2 bg-primary"></span>
-                            </span>
-                            AI ENGINE UPDATED TO V4.2
-                        </div>
-                        <h1 className="text-4xl md:text-6xl font-black leading-tight tracking-tight mb-6">
-                            Generate Perfect Metadata from Any File — <span className="text-primary">Instantly</span>
-                        </h1>
-                        <p className="text-lg md:text-xl text-slate-600 dark:text-slate-400 max-w-2xl mb-10 leading-relaxed">
-                            MetaForge uses advanced AI to analyze Images, SVGs, and Docs, creating SEO-ready and developer-friendly metadata in seconds.
-                        </p>
-                        <div className="flex flex-col sm:flex-row items-center gap-4 w-full justify-center">
-                            <button className="w-full sm:w-auto flex items-center justify-center gap-2 min-w-50 h-14 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-lg font-bold hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors">
-                                <Zap className="w-6 h-6" />
-                                Try with Sample
-                            </button>
-                        </div>
-                        {/* Stats Grid */}
-                        <div className="mt-16 w-full max-w-5xl grid grid-cols-1 md:grid-cols-3 gap-6">
-                            <div className="p-8 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white/50 dark:bg-slate-900/50 backdrop-blur-sm shadow-lg hover:shadow-xl hover:border-primary/50 hover:-translate-y-1 transition-all group">
-                                <div className="text-4xl font-black text-primary mb-2 group-hover:scale-110 transition-transform">2.4s</div>
-                                <div className="text-sm font-semibold text-slate-900 dark:text-white mb-1">Average Processing Time</div>
-                                <div className="text-xs text-slate-500">Lightning-fast AI analysis</div>
+                        <AnimatedSection>
+                            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 border border-primary/20 text-primary text-xs font-bold mb-6">
+                                <span className="relative flex h-2 w-2">
+                                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75" />
+                                    <span className="relative inline-flex rounded-full h-2 w-2 bg-primary" />
+                                </span>
+                                AI ENGINE UPDATED TO V4.2
                             </div>
-                            <div className="p-8 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white/50 dark:bg-slate-900/50 backdrop-blur-sm shadow-lg hover:shadow-xl hover:border-primary/50 hover:-translate-y-1 transition-all group">
-                                <div className="text-4xl font-black text-primary mb-2 group-hover:scale-110 transition-transform">98%</div>
-                                <div className="text-sm font-semibold text-slate-900 dark:text-white mb-1">Accuracy Rate</div>
-                                <div className="text-xs text-slate-500">Production-grade quality</div>
-                            </div>
-                            <div className="p-8 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white/50 dark:bg-slate-900/50 backdrop-blur-sm shadow-lg hover:shadow-xl hover:border-primary/50 hover:-translate-y-1 transition-all group">
-                                <div className="text-4xl font-black text-primary mb-2 group-hover:scale-110 transition-transform">50+</div>
-                                <div className="text-sm font-semibold text-slate-900 dark:text-white mb-1">File Formats</div>
-                                <div className="text-xs text-slate-500">Images, docs, and more</div>
-                            </div>
-                        </div>
-                    </div>
-                </section>
-                {/* Supported Formats Section  */}
-                <section className="py-12 border-y border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/20">
-                    <div className="max-w-7xl mx-auto px-6">
-                        <p className="text-center text-slate-500 dark:text-slate-400 text-xs font-bold uppercase tracking-[0.2em] mb-8">
-                            Supported Formats &amp; Extensions
-                        </p>
-                        <div className="flex flex-wrap justify-center gap-4 md:gap-8">
-                            <div className="flex items-center gap-3 px-5 py-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm hover:border-primary/50 transition-colors group">
-                                <ImageIcon className="w-6 h-6 text-primary group-hover:scale-110 transition-transform" />
-                                <span className="text-sm font-semibold">PNG / JPG</span>
-                            </div>
-                            <div className="flex items-center gap-3 px-5 py-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm hover:border-primary/50 transition-colors group">
-                                <Code className="w-6 h-6 text-primary group-hover:scale-110 transition-transform" />
-                                <span className="text-sm font-semibold">SVG</span>
-                            </div>
-                            <div className="flex items-center gap-3 px-5 py-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm hover:border-primary/50 transition-colors group">
-                                <FileText className="w-6 h-6 text-primary group-hover:scale-110 transition-transform" />
-                                <span className="text-sm font-semibold">PDF</span>
-                            </div>
-                            <div className="flex items-center gap-3 px-5 py-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm hover:border-primary/50 transition-colors group">
-                                <File className="w-6 h-6 text-primary group-hover:scale-110 transition-transform" />
-                                <span className="text-sm font-semibold">DOCX</span>
-                            </div>
-                            <div className="flex items-center gap-3 px-5 py-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm hover:border-primary/50 transition-colors group">
-                                <Video className="w-6 h-6 text-primary group-hover:scale-110 transition-transform" />
-                                <span className="text-sm font-semibold">MP4</span>
-                            </div>
-                        </div>
-                    </div>
-                </section>
-                {/* Feature Section */}
-                <section className="py-24 px-6">
-                    <div className="max-w-7xl mx-auto">
-                        <div className="flex flex-col gap-4 mb-16 max-w-2xl">
-                            <h2 className="text-3xl md:text-5xl font-black tracking-tight">Powerful Metadata Tools</h2>
-                            <p className="text-lg text-slate-600 dark:text-slate-400">
-                                Designed for developers who need speed, flexibility, and production-grade accuracy in their workflow.
+                        </AnimatedSection>
+                        <AnimatedSection delay={100}>
+                            <h1 className="text-4xl md:text-6xl font-black leading-tight tracking-tight mb-6">
+                                Generate Perfect Metadata from Any File — <span className="text-primary">Instantly</span>
+                            </h1>
+                        </AnimatedSection>
+                        <AnimatedSection delay={200}>
+                            <p className="text-lg md:text-xl text-slate-600 dark:text-slate-400 max-w-2xl mb-10 leading-relaxed">
+                                Picgenre uses advanced AI to analyze images, SVGs, and documents, creating SEO-ready metadata in seconds.
                             </p>
-                        </div>
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                            {/* Feature 1 */}
-                            <div className="flex flex-col gap-6 p-8 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/40 hover:bg-slate-50 dark:hover:bg-slate-900 transition-all group">
-                                <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center text-primary group-hover:bg-primary group-hover:text-white transition-all">
-                                    <Layers className="w-8 h-8" />
-                                </div>
-                                <div className="space-y-3">
-                                    <h3 className="text-xl font-bold">Batch Processing</h3>
-                                    <p className="text-slate-600 dark:text-slate-400 leading-relaxed">
-                                        Process hundreds of files simultaneously without breaking a sweat. Perfect for large-scale content migrations.
-                                    </p>
-                                </div>
-                                <div className="mt-auto pt-4">
-                                    <a className="text-primary text-sm font-bold flex items-center gap-1 group-hover:gap-2 transition-all" href="#">
-                                        Learn more
-                                        <ArrowRight className="w-3 h-3" />
-                                    </a>
-                                </div>
+                        </AnimatedSection>
+                        <AnimatedSection delay={300}>
+                            <div className="flex flex-col sm:flex-row items-center gap-4 w-full justify-center">
+                                <a href="/workspace" className="w-full sm:w-auto flex items-center justify-center gap-2 min-w-[200px] h-14 rounded-xl bg-primary text-white text-base font-bold hover:bg-blue-700 hover:scale-[1.02] active:scale-[0.98] transition-all shadow-lg shadow-primary/20">
+                                    Get Started
+                                    <ArrowRight className="w-5 h-5" />
+                                </a>
+                                <a href="#how-it-works" className="w-full sm:w-auto flex items-center justify-center gap-2 min-w-[200px] h-14 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-base font-bold hover:bg-slate-50 dark:hover:bg-slate-700 hover:scale-[1.02] active:scale-[0.98] transition-all">
+                                    See How It Works
+                                </a>
                             </div>
-                            {/* Feature 2 */}
-                            <div className="flex flex-col gap-6 p-8 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/40 hover:bg-slate-50 dark:hover:bg-slate-900 transition-all group">
-                                <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center text-primary group-hover:bg-primary group-hover:text-white transition-all">
-                                    <Key className="w-8 h-8" />
-                                </div>
-                                <div className="space-y-3">
-                                    <h3 className="text-xl font-bold">Bring Your Own AI Key</h3>
-                                    <p className="text-slate-600 dark:text-slate-400 leading-relaxed">
-                                        Connect your OpenAI or Anthropic API key for full control over costs and custom model fine-tuning.
-                                    </p>
-                                </div>
-                                <div className="mt-auto pt-4">
-                                    <a className="text-primary text-sm font-bold flex items-center gap-1 group-hover:gap-2 transition-all" href="#">
-                                        Setup guide
-                                        <ArrowRight className="w-3 h-3" />
-                                    </a>
-                                </div>
+                        </AnimatedSection>
+                    </div>
+                </section>
+
+                {/* Stats Bar */}
+                <section className="px-6 mb-25">
+                    <div className="max-w-4xl mx-auto">
+                        <AnimatedSection>
+                            <div className="flex flex-col sm:flex-row items-center justify-center gap-6 sm:gap-0 sm:divide-x sm:divide-slate-200 dark:sm:divide-slate-800 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white/50 dark:bg-slate-900/50 backdrop-blur-sm py-8 px-6 hover:shadow-md transition-shadow duration-300">
+                                {stats.map((s, i) => (
+                                    <div key={i} className="flex-1 text-center px-8">
+                                        <div className="text-3xl md:text-4xl font-black text-primary mb-1">{s.value}</div>
+                                        <div className="text-sm font-semibold text-slate-900 dark:text-white">{s.label}</div>
+                                        <div className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">{s.desc}</div>
+                                    </div>
+                                ))}
                             </div>
-                            {/* Feature 3 */}
-                            <div className="flex flex-col gap-6 p-8 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/40 hover:bg-slate-50 dark:hover:bg-slate-900 transition-all group">
-                                <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center text-primary group-hover:bg-primary group-hover:text-white transition-all">
-                                    <Terminal className="w-8 h-8" />
-                                </div>
-                                <div className="space-y-3">
-                                    <h3 className="text-xl font-bold">Export Ready Metadata</h3>
-                                    <p className="text-slate-600 dark:text-slate-400 leading-relaxed">
-                                        Get your metadata in JSON, CSV, or XML format, ready for your database or headless CMS integration.
-                                    </p>
-                                </div>
-                                <div className="mt-auto pt-4">
-                                    <a className="text-primary text-sm font-bold flex items-center gap-1 group-hover:gap-2 transition-all" href="#">
-                                        API Docs
-                                        <ArrowRight className="w-3 h-3" />
-                                    </a>
-                                </div>
+                        </AnimatedSection>
+                    </div>
+                </section>
+
+                {/* Supported Formats */}
+                <section className="py-24 px-6 border-t border-slate-200 dark:border-slate-800">
+                    <div className="max-w-5xl mx-auto">
+                        <AnimatedSection>
+                            <div className="text-center mb-12">
+                                <p className="text-xs font-bold uppercase tracking-[0.2em] text-primary mb-4">FILE FORMATS</p>
+                                <h2 className="text-3xl md:text-5xl font-black tracking-tight mb-4">Works with What You Have</h2>
+                                <p className="text-lg text-slate-600 dark:text-slate-400 max-w-xl mx-auto">
+                                    Upload any common file format — our AI handles the rest.
+                                </p>
                             </div>
+                        </AnimatedSection>
+                        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-4">
+                            {[
+                                { icon: ImageIcon, label: 'PNG / JPG', desc: 'Raster images' },
+                                { icon: Code, label: 'SVG', desc: 'Vector graphics' },
+                                { icon: FileText, label: 'PDF', desc: 'Documents' },
+                                { icon: File, label: 'DOCX', desc: 'Word files' },
+                                { icon: Video, label: 'MP4', desc: 'Video clips' },
+                            ].map((fmt, i) => (
+                                <AnimatedSection key={i} delay={i * 80}>
+                                    <div className="flex flex-col items-center gap-3 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/40 hover:bg-slate-50 dark:hover:bg-slate-900 hover:-translate-y-1 hover:shadow-lg transition-all duration-300 group text-center">
+                                        <div className="w-14 h-14 rounded-xl bg-primary/10 flex items-center justify-center text-primary group-hover:bg-primary group-hover:text-white transition-all duration-300">
+                                            <fmt.icon className="w-7 h-7" />
+                                        </div>
+                                        <div>
+                                            <p className="text-sm font-bold text-slate-900 dark:text-white">{fmt.label}</p>
+                                            <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">{fmt.desc}</p>
+                                        </div>
+                                    </div>
+                                </AnimatedSection>
+                            ))}
                         </div>
                     </div>
                 </section>
-                
+
+                {/* Supported Platforms */}
+                <section className="py-24 px-6 border-t border-slate-200 dark:border-slate-800">
+                    <div className="max-w-5xl mx-auto">
+                        <AnimatedSection>
+                            <div className="text-center mb-12">
+                                <p className="text-xs font-bold uppercase tracking-[0.2em] text-primary mb-4">PLATFORMS</p>
+                                <h2 className="text-3xl md:text-5xl font-black tracking-tight mb-4">Optimized for Every Stock Platform</h2>
+                                <p className="text-lg text-slate-600 dark:text-slate-400 max-w-xl mx-auto">
+                                    Metadata tailored to each platform's requirements and best practices.
+                                </p>
+                            </div>
+                        </AnimatedSection>
+                        <div className="grid grid-cols-2 md:grid-cols-4 gap-5">
+                            {[
+                                { icon: Diamond, label: 'Adobe Stock', desc: 'Industry standard' },
+                                { icon: Users, label: 'Freepik', desc: 'Design community' },
+                                { icon: Camera, label: 'Shutterstock', desc: 'Global marketplace' },
+                                { icon: Globe, label: 'Vecteezy', desc: 'Creative vectors' },
+                            ].map((p, i) => (
+                                <AnimatedSection key={i} delay={i * 100}>
+                                    <div className="flex flex-col items-center gap-4 p-7 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/40 hover:bg-slate-50 dark:hover:bg-slate-900 hover:-translate-y-1 hover:shadow-lg transition-all duration-300 group text-center">
+                                        <div className="w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center text-primary group-hover:bg-primary group-hover:text-white transition-all duration-300">
+                                            <p.icon className="w-8 h-8" />
+                                        </div>
+                                        <div>
+                                            <p className="text-base font-bold text-slate-900 dark:text-white">{p.label}</p>
+                                            <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">{p.desc}</p>
+                                        </div>
+                                    </div>
+                                </AnimatedSection>
+                            ))}
+                        </div>
+                    </div>
+                </section>
+
+                {/* How It Works */}
+                <section id="how-it-works" className="py-24 px-6 border-t border-slate-200 dark:border-slate-800">
+                    <div className="max-w-5xl mx-auto">
+                        <AnimatedSection>
+                            <div className="text-center mb-16">
+                                <p className="text-xs font-bold uppercase tracking-[0.2em] text-primary mb-4">HOW IT WORKS</p>
+                                <h2 className="text-3xl md:text-5xl font-black tracking-tight mb-4">Three Steps to Perfect Metadata</h2>
+                                <p className="text-lg text-slate-600 dark:text-slate-400 max-w-xl mx-auto">
+                                    No setup, no configuration. Just upload and get results.
+                                </p>
+                            </div>
+                        </AnimatedSection>
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 relative">
+                            <div className="hidden md:block absolute top-12 left-[20%] right-[20%] h-px border-t-2 border-dashed border-slate-200 dark:border-slate-800" />
+                            {steps.map((step, i) => {
+                                const Icon = step.icon
+                                return (
+                                    <AnimatedSection key={i} delay={i * 150}>
+                                        <div className="flex flex-col items-center text-center gap-5 relative">
+                                            <div className="w-24 h-24 rounded-2xl bg-primary/5 border border-primary/20 flex items-center justify-center relative z-10 bg-background-light dark:bg-background-dark hover:scale-105 transition-transform duration-300">
+                                                <Icon className="w-10 h-10 text-primary" />
+                                            </div>
+                                            <div className="flex flex-col gap-2">
+                                                <div className="text-xs font-black text-primary tracking-widest">STEP {step.num}</div>
+                                                <h3 className="text-xl font-bold text-slate-900 dark:text-white">{step.title}</h3>
+                                                <p className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed max-w-xs mx-auto">{step.desc}</p>
+                                            </div>
+                                        </div>
+                                    </AnimatedSection>
+                                )
+                            })}
+                        </div>
+                    </div>
+                </section>
+
+                {/* Features Bento Grid */}
+                <section className="py-24 px-6 border-t border-slate-200 dark:border-slate-800">
+                    <div className="max-w-5xl mx-auto">
+                        <AnimatedSection>
+                            <div className="text-center mb-16">
+                                <p className="text-xs font-bold uppercase tracking-[0.2em] text-primary mb-4">FEATURES</p>
+                                <h2 className="text-3xl md:text-5xl font-black tracking-tight mb-4">Powerful Metadata Tools</h2>
+                                <p className="text-lg text-slate-600 dark:text-slate-400 max-w-xl mx-auto">
+                                    Designed for contributors who need speed, flexibility, and production-grade accuracy.
+                                </p>
+                            </div>
+                        </AnimatedSection>
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-5 auto-rows-[200px]">
+                            <AnimatedSection delay={0} className="md:col-span-2">
+                                <div className="h-full flex flex-col gap-5 p-8 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/40 hover:bg-slate-50 dark:hover:bg-slate-900 hover:-translate-y-1 hover:shadow-lg transition-all duration-300 group">
+                                    <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center text-primary group-hover:bg-primary group-hover:text-white transition-all duration-300">
+                                        <Layers className="w-6 h-6" />
+                                    </div>
+                                    <div>
+                                        <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-2">Batch Processing</h3>
+                                        <p className="text-slate-600 dark:text-slate-400 leading-relaxed">
+                                            Process hundreds of files simultaneously without breaking a sweat. Perfect for large-scale content migrations and portfolio uploads.
+                                        </p>
+                                    </div>
+                                </div>
+                            </AnimatedSection>
+                            <AnimatedSection delay={100}>
+                                <div className="h-full flex flex-col gap-5 p-8 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/40 hover:bg-slate-50 dark:hover:bg-slate-900 hover:-translate-y-1 hover:shadow-lg transition-all duration-300 group">
+                                    <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center text-primary group-hover:bg-primary group-hover:text-white transition-all duration-300">
+                                        <Key className="w-6 h-6" />
+                                    </div>
+                                    <div>
+                                        <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-1">Bring Your Own Key</h3>
+                                        <p className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
+                                            Connect your own API key for full control over costs and model selection.
+                                        </p>
+                                    </div>
+                                </div>
+                            </AnimatedSection>
+                            <AnimatedSection delay={200}>
+                                <div className="h-full flex flex-col gap-5 p-8 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/40 hover:bg-slate-50 dark:hover:bg-slate-900 hover:-translate-y-1 hover:shadow-lg transition-all duration-300 group">
+                                    <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center text-primary group-hover:bg-primary group-hover:text-white transition-all duration-300">
+                                        <Terminal className="w-6 h-6" />
+                                    </div>
+                                    <div>
+                                        <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-1">Export Ready</h3>
+                                        <p className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
+                                            Get metadata in JSON, CSV, or XML — ready for any platform or CMS.
+                                        </p>
+                                    </div>
+                                </div>
+                            </AnimatedSection>
+                            <AnimatedSection delay={300} className="md:col-span-2">
+                                <div className="h-full flex flex-col gap-5 p-8 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/40 hover:bg-slate-50 dark:hover:bg-slate-900 hover:-translate-y-1 hover:shadow-lg transition-all duration-300 group">
+                                    <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center text-primary group-hover:bg-primary group-hover:text-white transition-all duration-300">
+                                        <Clock className="w-6 h-6" />
+                                    </div>
+                                    <div>
+                                        <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-2">Lightning Fast</h3>
+                                        <p className="text-slate-600 dark:text-slate-400 leading-relaxed">
+                                            Average 2.4 seconds per file with concurrent processing across multiple workers. Your metadata is ready before you finish your coffee.
+                                        </p>
+                                    </div>
+                                </div>
+                            </AnimatedSection>
+                        </div>
+                    </div>
+                </section>
+
+                {/* Trusted By Section */}
+                <section className="py-24 px-6 border-t border-slate-200 dark:border-slate-800">
+                    <div className="max-w-5xl mx-auto flex flex-col items-center gap-6">
+                        <AnimatedSection>
+                            <p className="text-xs font-bold uppercase tracking-[0.2em] text-primary">
+                                TRUSTED BY CONTRIBUTORS
+                            </p>
+                        </AnimatedSection>
+                        <AnimatedSection delay={100}>
+                            <h2 className="text-3xl md:text-5xl font-black tracking-tight text-center">
+                                Why Contributors Choose Picgenre
+                            </h2>
+                        </AnimatedSection>
+                        <AnimatedSection delay={200}>
+                            <p className="text-lg text-slate-600 dark:text-slate-400 max-w-2xl text-center leading-relaxed">
+                                Join thousands of stock contributors who save hours every week with AI-powered metadata generation.
+                            </p>
+                        </AnimatedSection>
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-8 w-full">
+                            {[
+                                { initials: 'SK', name: 'Sarah K.', role: 'Adobe Stock Contributor', rating: 5, quote: 'I used to spend 20 minutes per image writing metadata. Now it takes 3 seconds. My upload rate has tripled.' },
+                                { initials: 'MR', name: 'Marcus R.', role: 'Shutterstock Artist', rating: 5, quote: 'The AI understands context perfectly — it generates relevant tags I wouldn\'t have thought of. Game changer for my portfolio.' },
+                                { initials: 'AL', name: 'Anna L.', role: 'Freepik Designer', rating: 4, quote: 'Batch processing is incredible. I uploaded 200 files and got perfect metadata for all of them in under a minute.' },
+                            ].map((t, i) => (
+                                <AnimatedSection key={i} delay={i * 100}>
+                                    <div className="h-full p-6 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white/50 dark:bg-slate-900/50 text-left flex flex-col gap-4 hover:-translate-y-1 hover:shadow-lg transition-all duration-300">
+                                        <div className="flex gap-0.5">
+                                            {Array.from({ length: 5 }).map((_, s) => (
+                                                <Star key={s} className={`w-4 h-4 ${s < t.rating ? 'fill-yellow-400 text-yellow-400' : 'fill-slate-200 text-slate-200 dark:fill-slate-700 dark:text-slate-700'}`} />
+                                            ))}
+                                        </div>
+                                        <p className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed">"{t.quote}"</p>
+                                        <div className="flex items-center gap-3 mt-auto pt-2">
+                                            <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary text-sm font-bold">{t.initials}</div>
+                                            <div>
+                                                <p className="text-sm font-bold text-slate-900 dark:text-white">{t.name}</p>
+                                                <p className="text-xs text-slate-500">{t.role}</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </AnimatedSection>
+                            ))}
+                        </div>
+                        <AnimatedSection delay={300}>
+                            <div className="flex flex-col sm:flex-row items-center gap-4 mt-8">
+                                <a href="/workspace" className="inline-flex items-center gap-2 h-12 px-8 rounded-xl bg-primary text-white text-sm font-bold hover:bg-blue-700 hover:scale-[1.02] active:scale-[0.98] transition-all shadow-lg shadow-primary/20">
+                                    Start Generating Free
+                                    <ArrowRight className="w-4 h-4" />
+                                </a>
+                                <a href="/feedback" className="inline-flex items-center gap-2 h-12 px-8 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-sm font-bold hover:bg-slate-50 dark:hover:bg-slate-700 hover:scale-[1.02] active:scale-[0.98] transition-all">
+                                    <MessageSquare className="w-4 h-4" />
+                                    Give Feedback
+                                </a>
+                            </div>
+                        </AnimatedSection>
+                    </div>
+                </section>
+
             </main>
         </div>
     );

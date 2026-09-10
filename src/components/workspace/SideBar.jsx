@@ -48,8 +48,8 @@ export default function SideBar({
     const progress = totalCount > 0 ? Math.round((processedCount / totalCount) * 100) : 0
 
     return (
-        <div className="lg:col-span-5">
-            <div className="bg-white dark:bg-slate-900/40 rounded-xl shadow-sm border border-slate-200 dark:border-slate-800 p-6 flex flex-col gap-6 sticky top-24">
+        <div className="lg:col-span-5 self-start">
+            <div className="bg-white dark:bg-slate-900/40 rounded-xl shadow-sm border border-slate-200 dark:border-slate-800 p-6 flex flex-col gap-6 sticky top-24 max-h-[calc(100vh-7rem)] overflow-y-auto scrollbar-thin">
                 <div className="flex flex-col gap-3">
                     <div className="flex justify-between items-end">
                         <h4 className="text-slate-900 dark:text-white text-sm font-bold uppercase tracking-widest">Queue Progress</h4>
