@@ -52,8 +52,8 @@ export default function AIModels() {
         <div>
             <div className="flex flex-wrap justify-between items-end gap-4 mb-8">
                 <div className="flex flex-col gap-2">
-                    <p className="text-slate-900 dark:text-white text-4xl font-black leading-tight tracking-[-0.033em]">Groq AI Configuration</p>
-                    <p className="text-slate-500 dark:text-[#9296c9] text-base font-normal leading-normal max-w-lg">Manage your Groq API credentials and default model preferences for high-performance inference.</p>
+                    <p className="text-slate-900 dark:text-white text-4xl font-black leading-tight tracking-[-0.033em]">Gemini AI Configuration</p>
+                    <p className="text-slate-500 dark:text-[#9296c9] text-base font-normal leading-normal max-w-lg">Manage your Google Gemini API credentials for AI-powered image generation and analysis.</p>
                 </div>
                 <div className="flex">
                     <button
@@ -68,8 +68,8 @@ export default function AIModels() {
             <div className="max-w-3xl">
                 <div className="flex flex-col gap-6 p-8 rounded-xl border border-slate-200 dark:border-[#232648] bg-white dark:bg-background-dark/50 shadow-sm">
                     <div className="flex items-center gap-2 border-b border-slate-100 dark:border-[#232648] pb-4 mb-2">
-                        <span className="material-symbols-outlined text-primary">bolt</span>
-                        <h2 className="text-slate-900 dark:text-white text-xl font-bold">Inference Settings</h2>
+                        <span className="material-symbols-outlined text-primary">key</span>
+                        <h2 className="text-slate-900 dark:text-white text-xl font-bold">API Credentials</h2>
                     </div>
                     <div className="flex flex-col gap-6">
                         <div className="flex flex-col gap-2">
@@ -109,6 +109,7 @@ export default function AIModels() {
                                     </button>
                                 </div>
                             </div>
+                            <p className="text-xs text-slate-500 dark:text-[#6b70a0] mt-1">Get your API key from <a href="https://aistudio.google.com/apikey" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">Google AI Studio</a></p>
                         </div>
                     </div>
                 </div>
