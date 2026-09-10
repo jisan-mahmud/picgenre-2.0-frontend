@@ -62,6 +62,30 @@ function isRetryable(error) {
   return false
 }
 
+function formatGeminiError(error) {
+  const raw = String(error?.message || error || '')
+  const code = error?.status || error?.statusCode
+
+  if (code === 429 || /RESOURCE_EXHAUSTED|quota exceeded|rate limit/i.test(raw)) {
+    return 'Gemini API quota exceeded. Please try again later or upgrade your plan.'
+  }
+  if (code === 401 || /api.?key|invalid.?key|permission.?denied/i.test(raw)) {
+    return 'Invalid Gemini API key. Check your VITE_GEMINI_API_KEY in .env.'
+  }
+  if (code === 403) {
+    return 'Gemini API access denied. Check your API key permissions.'
+  }
+  if (/timed out|aborted/i.test(raw)) {
+    return `Request timed out after ${Math.round(REQUEST_TIMEOUT_MS / 1000)}s.`
+  }
+  if (/network|econnreset|fetch failed|ERR_NETWORK/i.test(raw)) {
+    return 'Network error. Check your internet connection.'
+  }
+
+  const short = raw.length > 120 ? raw.slice(0, 120) + '...' : raw
+  return short || 'Gemini API error.'
+}
+
 export async function analyzeImage(imageFile, platform, customPrompt, apiKey, settings = {}, maxRetries = MAX_RETRIES) {
   const { base64, mimeType } = await prepareImageForGemini(imageFile)
   const base = PLATFORMS[platform] || PLATFORMS[DEFAULT_PLATFORM]
@@ -137,9 +161,9 @@ export async function analyzeImage(imageFile, platform, customPrompt, apiKey, se
     } catch (error) {
       const err = controller.signal.aborted
         ? new Error(`Request timed out after ${Math.round(REQUEST_TIMEOUT_MS / 1000)}s`)
-        : error
+        : new Error(formatGeminiError(error))
       lastError = err
-      if (!isRetryable(err) || attempt >= maxRetries) {
+      if (!isRetryable(error) || attempt >= maxRetries) {
         throw err
       }
     } finally {
