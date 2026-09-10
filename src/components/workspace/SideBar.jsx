@@ -1,8 +1,50 @@
 import React from 'react'
-import { Diamond, Users, Camera, HelpCircle, Info, StopCircle, Sparkles } from 'lucide-react'
+import { Diamond, Users, Camera, HelpCircle, Info, StopCircle, Sparkles, Settings2 } from 'lucide-react'
 import CurrentSubscription from './sidebar/CurrentSubscription'
+import { PLATFORMS } from '../../utils/geminiService'
 
-export default function SideBar({ queueCount, processedCount = 0, totalCount = 0, onGenerate, onStop, isProcessing }) {
+const PLATFORM_ICONS = {
+    'Adobe Stock': Diamond,
+    'Freepik': Users,
+    'Shutterstock': Camera,
+}
+
+const SettingInput = ({ label, value, onChange, min = 1, max, disabled }) => (
+    <div className="flex flex-col gap-1.5">
+        <div className="flex items-center justify-between">
+            <label className="text-[10px] text-slate-500 dark:text-slate-400 font-bold uppercase tracking-wider">{label}</label>
+            <span className="text-xs font-black text-primary dark:text-white px-1.5 py-0.5 rounded bg-primary/10 dark:bg-primary/20 min-w-9 text-center">{value}</span>
+        </div>
+        <input
+            type="range"
+            min={min}
+            max={max}
+            value={value}
+            onChange={(e) => onChange(Number(e.target.value))}
+            disabled={disabled}
+            className="w-full accent-primary disabled:opacity-50 disabled:cursor-not-allowed"
+        />
+        <div className="flex justify-between text-[9px] text-slate-400 dark:text-slate-500 font-medium uppercase tracking-wide">
+            <span>{min}</span>
+            <span>{max}</span>
+        </div>
+    </div>
+)
+
+export default function SideBar({
+    queueCount,
+    processedCount = 0,
+    totalCount = 0,
+    onGenerate,
+    onStop,
+    isProcessing,
+    platform,
+    customPrompt,
+    settings,
+    onPlatformChange,
+    onCustomPromptChange,
+    onSettingsChange,
+}) {
     const progress = totalCount > 0 ? Math.round((processedCount / totalCount) * 100) : 0
 
     return (
@@ -27,18 +69,25 @@ export default function SideBar({ queueCount, processedCount = 0, totalCount = 0
                     <div className="flex flex-col gap-3">
                         <label className="text-slate-700 dark:text-slate-300 text-sm font-bold uppercase tracking-wider">Target Platform</label>
                         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                            <button className="flex flex-col items-center gap-2 p-4 rounded-xl border transition-all bg-white dark:bg-slate-900/40 border-primary text-primary dark:text-white ring-2 ring-primary/20 shadow-md">
-                                <Diamond className="w-6 h-6" />
-                                <span className="text-[11px] font-bold uppercase tracking-tight text-center">Adobe Stock</span>
-                            </button>
-                            <button className="flex flex-col items-center gap-2 p-4 rounded-xl border border-slate-200 dark:border-slate-800 bg-white/50 dark:bg-slate-900 text-slate-500 hover:border-primary/50 hover:text-primary dark:hover:text-white transition-all">
-                                <Users className="w-6 h-6" />
-                                <span className="text-[11px] font-bold uppercase tracking-tight text-center">Freepik</span>
-                            </button>
-                            <button className="flex flex-col items-center gap-2 p-4 rounded-xl border border-slate-200 dark:border-slate-800 bg-white/50 dark:bg-slate-900 text-slate-500 hover:border-primary/50 hover:text-primary dark:hover:text-white transition-all">
-                                <Camera className="w-6 h-6" />
-                                <span className="text-[11px] font-bold uppercase tracking-tight text-center">Shutterstock</span>
-                            </button>
+                            {Object.keys(PLATFORMS).map((name) => {
+                                const Icon = PLATFORM_ICONS[name] || Info
+                                const isActive = platform === name
+                                return (
+                                    <button
+                                        key={name}
+                                        onClick={() => onPlatformChange?.(name)}
+                                        disabled={isProcessing}
+                                        className={`flex flex-col items-center gap-2 p-4 rounded-xl border transition-all disabled:opacity-50 disabled:cursor-not-allowed ${
+                                            isActive
+                                                ? 'bg-white dark:bg-slate-900/40 border-primary text-primary dark:text-white ring-2 ring-primary/20 shadow-md'
+                                                : 'border-slate-200 dark:border-slate-800 bg-white/50 dark:bg-slate-900 text-slate-500 hover:border-primary/50 hover:text-primary dark:hover:text-white'
+                                        }`}
+                                    >
+                                        <Icon className="w-6 h-6" />
+                                        <span className="text-[11px] font-bold uppercase tracking-tight text-center">{name}</span>
+                                    </button>
+                                )
+                            })}
                         </div>
                     </div>
                     <div className="flex flex-col gap-3">
@@ -46,7 +95,25 @@ export default function SideBar({ queueCount, processedCount = 0, totalCount = 0
                             <label className="text-slate-700 dark:text-slate-300 text-sm font-bold uppercase tracking-wider">Custom Instructions</label>
                             <HelpCircle className="w-4 h-4 text-slate-400" />
                         </div>
-                        <textarea className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg p-3 text-sm text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-600 focus:ring-2 focus:ring-primary focus:border-transparent transition-all min-h-[100px] resize-none" placeholder="Add custom context, keywords, or specific style guides for the AI..."></textarea>
+                        <textarea
+                            value={customPrompt}
+                            onChange={(e) => onCustomPromptChange?.(e.target.value)}
+                            disabled={isProcessing}
+                            className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg p-3 text-sm text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-600 focus:ring-2 focus:ring-primary focus:border-transparent transition-all min-h-[100px] resize-none disabled:opacity-50"
+                            placeholder="Add custom context, keywords, or specific style guides for the AI..."></textarea>
+                    </div>
+                    <div className="flex flex-col gap-3">
+                        <div className="flex items-center gap-2">
+                            <Settings2 className="w-4 h-4 text-slate-400" />
+                            <label className="text-slate-700 dark:text-slate-300 text-sm font-bold uppercase tracking-wider">Metadata Settings</label>
+                        </div>
+                        <div className="grid grid-cols-2 gap-3">
+                            <SettingInput label="Min Keywords" value={settings?.minKeywords} onChange={(v) => onSettingsChange?.('minKeywords', v)} min={1} max={200} disabled={isProcessing} />
+                            <SettingInput label="Max Keywords" value={settings?.maxKeywords} onChange={(v) => onSettingsChange?.('maxKeywords', v)} min={1} max={200} disabled={isProcessing} />
+                            <SettingInput label="Min Title Words" value={settings?.minTitleWords} onChange={(v) => onSettingsChange?.('minTitleWords', v)} min={1} max={50} disabled={isProcessing} />
+                            <SettingInput label="Max Title Words" value={settings?.maxTitleWords} onChange={(v) => onSettingsChange?.('maxTitleWords', v)} min={1} max={50} disabled={isProcessing} />
+                            <SettingInput label="Title Max Length" value={settings?.titleMaxLength} onChange={(v) => onSettingsChange?.('titleMaxLength', v)} min={10} max={300} disabled={isProcessing} />
+                        </div>
                     </div>
                 </div>
                 <CurrentSubscription/>
