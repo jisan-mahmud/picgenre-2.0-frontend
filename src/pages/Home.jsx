@@ -73,7 +73,7 @@ export default function Home() {
                                     Get Started
                                     <ArrowRight className="w-5 h-5" />
                                 </a>
-                                <a href="#how-it-works" className="w-full sm:w-auto flex items-center justify-center gap-2 min-w-[200px] h-14 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-base font-bold hover:bg-slate-50 dark:hover:bg-slate-700 hover:scale-[1.02] active:scale-[0.98] transition-all">
+                                <a href="/how-it-works" className="w-full sm:w-auto flex items-center justify-center gap-2 min-w-[200px] h-14 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-base font-bold hover:bg-slate-50 dark:hover:bg-slate-700 hover:scale-[1.02] active:scale-[0.98] transition-all">
                                     See How It Works
                                 </a>
                             </div>
