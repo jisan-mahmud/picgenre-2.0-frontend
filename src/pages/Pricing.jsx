@@ -35,8 +35,8 @@ const PAYMENT_METHODS = {
 const freePlan = {
     name: 'Free',
     description: 'Perfect for hobbyists and experimentation.',
-    monthly: { price: '$0', tokens: null },
-    yearly:  { price: '$0', tokens: null },
+    monthly: { price: '৳0', tokens: null },
+    yearly:  { price: '৳0', tokens: null },
     button: 'Start for Free',
     featured: false,
     features: [
@@ -212,22 +212,24 @@ export default function Pricing() {
     const yearlyPlans = data?.yearly ?? []
     const discountPercent = yearlyPlans[0]?.discount_percent ?? 0
 
-    const paidCards = monthlyPlans.map((mp) => {
-        const yp = yearlyPlans.find((p) => p.tier === mp.tier)
-        return {
-            id: mp.id,
-            name: mp.tier === 'PRO' ? 'Pro' : 'Basic',
-            description: mp.description,
-            monthly: { price: `$${mp.price}`, tokens: mp.monthly_credit },
-            yearly: yp
-                ? { price: `$${yp.price}`, yearlyTotal: `$${yp.price}`, tokens: yp.monthly_credit, totalCredits: yp.credits }
-                : { price: `$${mp.price}`, yearlyTotal: null, tokens: mp.monthly_credit, totalCredits: null },
-            featured: mp.tier === 'PRO',
-            isActive: loggedIn && (mp.is_active || yp?.is_active),
-            button: `Get Started with ${mp.tier === 'PRO' ? 'Pro' : 'Basic'}`,
-            features: paidFeatures[mp.tier] ?? [],
-        }
-    })
+    const paidCards = monthlyPlans
+        .filter((p) => p.tier !== 'FREE')
+        .map((mp) => {
+            const yp = yearlyPlans.find((p) => p.tier === mp.tier)
+            return {
+                id: mp.id,
+                name: { PRO: 'Pro', BASIC: 'Basic' }[mp.tier] ?? mp.tier,
+                description: mp.description,
+                monthly: { price: `৳${mp.price}`, tokens: mp.monthly_credit },
+                yearly: yp
+                    ? { price: `৳${yp.price}`, yearlyTotal: `৳${yp.price}`, tokens: yp.monthly_credit, totalCredits: yp.credits }
+                    : { price: `৳${mp.price}`, yearlyTotal: null, tokens: mp.monthly_credit, totalCredits: null },
+                featured: mp.tier === 'BASIC',
+                isActive: loggedIn && (mp.is_active || yp?.is_active),
+                button: `Get Started with ${mp.tier === 'PRO' ? 'Pro' : 'Basic'}`,
+                features: paidFeatures[mp.tier] ?? [],
+            }
+        })
 
     const plans = [{ ...freePlan, isActive: loggedIn && !paidCards.some((p) => p.isActive) }, ...paidCards]
 
@@ -317,7 +319,7 @@ export default function Pricing() {
                             <div className="mb-8">
                                 <div className="flex items-baseline gap-2">
                                     <span className="text-4xl font-black text-slate-900 dark:text-white">{yearly ? plan.yearly.price : plan.monthly.price}</span>
-                                    {yearly && plan.monthly.price !== '$0' && (
+                                    {yearly && plan.monthly.price !== '৳0' && (
                                         <span className="text-slate-400 line-through text-lg">{plan.monthly.price}</span>
                                     )}
                                     <span className="text-slate-500 dark:text-slate-400 text-sm">/mo</span>
