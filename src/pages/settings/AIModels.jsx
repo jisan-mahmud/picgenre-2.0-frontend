@@ -1,26 +1,20 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useRef } from 'react'
 import { useApiQuery, useApiMutation } from '../../hooks/useApi'
 
 export default function AIModels() {
-    const [modelName, setModelName] = useState('')
     const [apiKey, setApiKey] = useState('')
     const [showKey, setShowKey] = useState(false)
     const [isDirty, setIsDirty] = useState(false)
     const [saveStatus, setSaveStatus] = useState(null) // 'success' | 'error'
 
-    const { data: modelList = [] } = useApiQuery(
-        ['groq-model-list'],
-        '/v1/models/groq-model-list/'
-    )
-
     const { data: currentModel } = useApiQuery(
-        ['groq-user-model'],
-        '/v1/models/user/groq-model/',
+        ['gemini-api-key'],
+        '/v1/models/user/gemini-api-key/',
         { retry: false }
     )
 
-    const updateModel = useApiMutation('/v1/models/user/groq-model/', 'post', {
-        invalidateQueries: [['groq-user-model']],
+    const updateModel = useApiMutation('/v1/models/user/gemini-api-key/', 'post', {
+        invalidateQueries: [['gemini-api-key']],
         onSuccess: () => {
             setIsDirty(false)
             setSaveStatus('success')
@@ -29,14 +23,11 @@ export default function AIModels() {
         onError: () => setSaveStatus('error'),
     })
 
-    useEffect(() => {
-        if (currentModel) {
-            setModelName(currentModel.model_name)
-            setApiKey(currentModel.api_key)
-        } else if (modelList.length > 0) {
-            setModelName(modelList[0][0])
-        }
-    }, [currentModel, modelList])
+    const previousKey = useRef()
+    if (previousKey.current !== currentModel?.api_key) {
+        previousKey.current = currentModel?.api_key
+        if (currentModel?.api_key) setApiKey(currentModel.api_key)
+    }
 
     const handleChange = (setter) => (e) => {
         setter(e.target.value)
@@ -45,7 +36,7 @@ export default function AIModels() {
     }
 
     const handleSave = () => {
-        updateModel.mutate({ model_name: modelName, api_key: apiKey })
+        updateModel.mutate({ api_key: apiKey })
     }
 
     return (
@@ -73,29 +64,12 @@ export default function AIModels() {
                     </div>
                     <div className="flex flex-col gap-6">
                         <div className="flex flex-col gap-2">
-                            <label className="text-sm font-semibold text-slate-700 dark:text-[#9296c9]">Default Model</label>
-                            <div className="relative">
-                                <select
-                                    value={modelName}
-                                    onChange={handleChange(setModelName)}
-                                    className="w-full bg-slate-50 dark:bg-[#1c1f3d] border border-slate-200 dark:border-[#323767] text-slate-900 dark:text-white rounded-lg px-4 py-2.5 appearance-none focus:ring-2 focus:ring-primary focus:border-transparent"
-                                >
-                                    {modelList.map(([value, label]) => (
-                                        <option key={value} value={value}>{label}</option>
-                                    ))}
-                                </select>
-                                <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400">
-                                    <span className="material-symbols-outlined">expand_more</span>
-                                </div>
-                            </div>
-                        </div>
-                        <div className="flex flex-col gap-2">
                             <label className="text-sm font-semibold text-slate-700 dark:text-[#9296c9]">API Key</label>
                             <div className="flex">
                                 <div className="relative flex-1">
                                     <input
                                         className="w-full bg-slate-50 dark:bg-[#1c1f3d] border border-slate-200 dark:border-[#323767] text-slate-900 dark:text-white rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-primary focus:border-transparent font-mono"
-                                        placeholder="gsk_••••••••••••••••••••••••"
+                                        placeholder="AIza••••••••••••••••••••••••••••"
                                         type={showKey ? 'text' : 'password'}
                                         value={apiKey}
                                         onChange={handleChange(setApiKey)}
@@ -131,7 +105,7 @@ export default function AIModels() {
                     <span className="material-symbols-outlined text-yellow-500 mt-0.5">warning</span>
                     <div>
                         <p className="text-yellow-600 dark:text-yellow-400 text-sm font-bold">Unsaved changes detected</p>
-                        <p className="text-slate-600 dark:text-slate-400 text-xs mt-1">Your modified model parameters have not been applied yet. Click 'Save Configuration' to update your workspace profile.</p>
+                        <p className="text-slate-600 dark:text-slate-400 text-xs mt-1">Your modified API key has not been applied yet. Click 'Save Configuration' to update your workspace profile.</p>
                     </div>
                 </div>
             )}

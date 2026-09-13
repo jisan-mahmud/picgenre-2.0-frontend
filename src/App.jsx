@@ -16,6 +16,8 @@ import BillingPlan from './pages/settings/BillingPlan';
 import Pricing from './pages/Pricing';
 import PrivacyPolicy from './pages/PrivacyPolicy';
 import Shop from './pages/Shop';
+import Feedback from './pages/Feedback';
+import HowItWorks from './pages/HowItWorks';
 import NotFoundPage from './pages/NotFoundPage';
 
 function App() {
@@ -43,6 +45,8 @@ function App() {
             <Route path="/pricing" element={<Pricing />} />
             <Route path='/privacy-policy' element={<PrivacyPolicy />} />
             <Route path='/shop' element={<Shop />} />
+            <Route path='/feedback' element={<Feedback />} />
+            <Route path='/how-it-works' element={<HowItWorks />} />
             <Route path="*" element={<NotFoundPage />} />
           </Route>
           <Route path="/login" element={<Login />} />
