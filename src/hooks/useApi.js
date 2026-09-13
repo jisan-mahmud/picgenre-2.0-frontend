@@ -110,6 +110,28 @@ export const useSubscriptionPlans = () => {
   });
 };
 
+export const useCurrentSubscription = () => {
+  return useQuery({
+    queryKey: ['subscription', 'current'],
+    queryFn: async () => {
+      const response = await axiosPrivate.get('/v1/subscription/current/');
+      return response.data;
+    },
+    staleTime: 1000 * 60 * 5,
+  });
+};
+
+export const useInvoices = (page = 1) => {
+  return useQuery({
+    queryKey: ['subscription', 'invoices', page],
+    queryFn: async () => {
+      const response = await axiosPrivate.get(`/v1/subscription/invoices/?page=${page}`);
+      return response.data;
+    },
+    staleTime: 1000 * 60 * 5,
+  });
+};
+
 export const useSubscribe = () => {
   const queryClient = useQueryClient();
 

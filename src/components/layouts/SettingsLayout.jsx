@@ -55,15 +55,6 @@ export default function SettingsLayout() {
                             </Link>
                         </div>
                     </div>
-                    <div className="px-4 hidden lg:block">
-                        <div className="rounded-xl bg-primary/10 p-4 border border-primary/20">
-                            <p className="text-xs font-bold text-primary mb-1 uppercase tracking-wider">Usage Status</p>
-                            <p className="text-slate-900 dark:text-white text-sm font-medium">78% of monthly limit</p>
-                            <div className="w-full bg-slate-200 dark:bg-slate-700 h-1.5 rounded-full mt-2 overflow-hidden">
-                                <div className="bg-primary h-full w-[78%]"></div>
-                            </div>
-                        </div>
-                    </div>
                 </aside>
                 <main className="flex-1 flex flex-col p-4 lg:p-8 overflow-y-auto">
                     <Outlet />
