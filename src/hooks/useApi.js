@@ -95,6 +95,35 @@ export const useUpdateNotificationSettings = () => {
   });
 };
 
+// Subscription hooks (public endpoint; uses authenticated instance so is_active reflects the user)
+export const useSubscriptionPlans = () => {
+  const token = localStorage.getItem('accessToken');
+  const instance = token ? axiosPrivate : axiosPublic;
+  return useQuery({
+    queryKey: ['subscription', 'plans', token ? 'user' : 'anon'],
+    queryFn: async () => {
+      const response = await instance.get('/v1/subscription/plans/');
+      return response.data;
+    },
+    staleTime: 1000 * 60 * 5,
+    refetchOnWindowFocus: true,
+  });
+};
+
+export const useSubscribe = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (data) => {
+      const response = await axiosPrivate.post('/v1/subscription/subscribe/', data);
+      return response.data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['subscription', 'plans'] });
+    },
+  });
+};
+
 // Feedback hooks (public, no auth)
 export const useFeedbackList = () => {
   return useQuery({
