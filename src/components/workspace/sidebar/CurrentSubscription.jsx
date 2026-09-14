@@ -1,60 +1,78 @@
-import React, { useEffect, useState } from 'react'
-import { Infinity } from 'lucide-react'
+import React from 'react'
+import { Infinity as InfinityIcon } from 'lucide-react'
+import { useCurrentSubscription } from '../../../hooks/useApi'
+
+const UNLIMITED_THRESHOLD = 1000000000
 
 export default function CurrentSubscription() {
-    const [subscription, setSubscription] = useState(null)
-    useEffect(() => {
-        const proPlan = {
-            name: 'Pro Plan',
-            totalTokens: 'Unlimited',
-            remainingTokens: 'Unlimited'
-        };
+    const { data: subscription, isLoading } = useCurrentSubscription()
 
-        const freePlan = {
-            name: 'Free Plan',
-            totalTokens: 20,
-            remainingTokens: 8
-        };
+    const plan = subscription?.plan
+    const tier = (plan?.tier || '').toLowerCase()
+    const planName = tier ? tier.charAt(0).toUpperCase() + tier.slice(1) + ' Plan' : 'Free Trial'
+    const total = subscription?.total_credit ?? 0
+    const remaining = subscription?.remaining_credit ?? 0
+    const isUnlimited = (subscription?.total_credit ?? 0) >= UNLIMITED_THRESHOLD
+    const pct = total > 0 ? Math.min(100, Math.max(0, (remaining / total) * 100)) : 0
+    const isActive = !!subscription?.is_active
 
-        setSubscription(proPlan);
-    }, []);
+    if (isLoading) {
+        return (
+            <div className="animate-pulse flex flex-col gap-4 p-5 rounded-lg border border-slate-200 dark:border-slate-800">
+                <div className="flex justify-between items-center gap-3">
+                    <div className="h-3 w-28 rounded bg-slate-200 dark:bg-slate-800"></div>
+                    <div className="h-4 w-16 rounded-full bg-slate-200 dark:bg-slate-800"></div>
+                </div>
+                <div className="h-10 rounded-lg bg-slate-200 dark:bg-slate-800"></div>
+                <div className="h-14 rounded-lg bg-slate-200 dark:bg-slate-800"></div>
+            </div>
+        )
+    }
+
+    if (!subscription) {
+        return (
+            <div className="flex flex-col gap-4 p-5 bg-slate-50 dark:bg-white/3 rounded-lg border border-slate-200 dark:border-white/5">
+                <div className="flex justify-between items-center">
+                    <label className="text-slate-900 dark:text-white text-xs font-bold uppercase tracking-widest">Current Subscription</label>
+                    <span className="px-2 py-0.5 rounded-full text-[10px] bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300 font-bold uppercase tracking-wider">Inactive</span>
+                </div>
+                <p className="text-[11px] font-bold text-slate-500 dark:text-slate-400">No active subscription</p>
+            </div>
+        )
+    }
 
     return (
-        <div>
-            <div className="flex flex-col gap-4">
-                {subscription?.name === 'Pro Plan' ? (
-                    <div className="flex flex-col gap-4 p-5 bg-primary/5 dark:bg-primary/10 rounded-lg border border-primary/10">
-                        <div className="flex justify-between items-center">
-                            <label className="text-slate-900 dark:text-white text-xs font-bold uppercase tracking-widest">Current Subscription</label>
-                            <span className="px-2 py-0.5 rounded-full text-[10px] bg-primary text-white font-bold uppercase tracking-wider">Pro Plan</span>
-                        </div>
-                        <div className="flex items-center justify-between bg-primary/5 dark:bg-slate-900/50 p-3 rounded-lg border border-primary/20">
-                            <p className="text-xs font-bold text-slate-700 dark:text-slate-300">Remaining Tokens</p>
-                            <div className="flex items-center gap-1.5 text-primary">
-                                <Infinity className="w-5 h-5" />
-                                <span className="text-sm font-black uppercase tracking-tight">Unlimited Tokens</span>
-                            </div>
-                        </div>
+        <div className="flex flex-col gap-4 p-5 bg-slate-50 dark:bg-white/3 rounded-lg border border-slate-200 dark:border-white/5">
+            <div className="flex justify-between items-center">
+                <label className="text-slate-900 dark:text-white text-xs font-bold uppercase tracking-widest">Current Subscription</label>
+                <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider ${
+                    isActive
+                        ? 'bg-primary text-white'
+                        : 'bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300'
+                }`}>
+                    {isActive ? planName : 'Inactive'}
+                </span>
+            </div>
+
+            {plan?.description && (
+                <p className="text-[11px] text-slate-500 dark:text-slate-400">{plan.description}</p>
+            )}
+
+            <div className="flex items-center justify-between bg-white dark:bg-slate-900/50 p-3 rounded-lg border border-slate-200 dark:border-slate-800">
+                <p className="text-[11px] font-bold text-slate-700 dark:text-slate-300">Remaining Credits</p>
+                {isUnlimited ? (
+                    <div className="flex items-center gap-1.5 text-primary">
+                        <InfinityIcon className="w-5 h-5" />
+                        <span className="text-sm font-black uppercase tracking-tight">Unlimited</span>
                     </div>
                 ) : (
-                    <div className="flex flex-col gap-4 p-5 bg-slate-50 dark:bg-white/3 rounded-lg border border-slate-200 dark:border-white/5">
-                        <div className="flex justify-between items-center">
-                            <label className="text-slate-900 dark:text-white text-xs font-bold uppercase tracking-widest">Current Subscription</label>
-                            <span className="px-2 py-0.5 rounded-full text-[10px] bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300 font-bold uppercase tracking-wider">Free Trial</span>
+                    <div className="flex items-center gap-3">
+                        <div className="w-20 bg-slate-200 dark:bg-slate-900 rounded-full h-1.5 overflow-hidden">
+                            <div className="bg-primary h-full rounded-full transition-all duration-1000" style={{ width: `${pct}%` }}></div>
                         </div>
-                        <div className="flex flex-col gap-2.5">
-                            <div className="flex justify-between items-center">
-                                <p className="text-[11px] font-bold text-slate-700 dark:text-slate-300">Remaining Tokens</p>
-                                <span className="text-[10px] text-slate-500 dark:text-slate-400 font-bold">8 / 20</span>
-                            </div>
-                            <div className="w-full bg-slate-200 dark:bg-slate-900 rounded-full h-1.5 overflow-hidden">
-                                <div className="bg-primary h-full rounded-full w-[40%] transition-all duration-1000"></div>
-                            </div>
-                            <p className="text-[10px] text-slate-500 dark:text-slate-400 italic">8 / 20 tokens remaining for exploration</p>
-                        </div>
+                        <span className="text-sm font-black text-slate-900 dark:text-white">{remaining} <span className="text-[10px] font-bold text-slate-500 dark:text-slate-400">/ {total}</span></span>
                     </div>
                 )}
-
             </div>
         </div>
     )
