@@ -73,6 +73,7 @@ const paidFeatures = {
 function CheckoutModal({ plan, isYearly, onClose, onSuccess }) {
     const [paymentMethod, setPaymentMethod] = useState(null)
     const [transactionId, setTransactionId] = useState('')
+    const [phoneNumber, setPhoneNumber] = useState('')
     const { mutateAsync, isPending, isError, error, reset } = useSubscribe()
 
     const price = isYearly ? plan.yearly.price : plan.monthly.price
@@ -84,6 +85,7 @@ function CheckoutModal({ plan, isYearly, onClose, onSuccess }) {
                 plan_id: plan.id,
                 transaction_id: transactionId.trim(),
                 payment_method: paymentMethod,
+                phone_number: phoneNumber.trim(),
             })
             onSuccess()
         } catch {
@@ -161,15 +163,26 @@ function CheckoutModal({ plan, isYearly, onClose, onSuccess }) {
                             className="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-white/10 bg-white dark:bg-white/5 text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-primary mb-4"
                         />
 
+                        <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-1">
+                            Your {method.label} Number
+                        </label>
+                        <input
+                            type="tel"
+                            value={phoneNumber}
+                            onChange={(e) => { setPhoneNumber(e.target.value); reset() }}
+                            placeholder="e.g. 017XXXXXXXX"
+                            className="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-white/10 bg-white dark:bg-white/5 text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-primary mb-4"
+                        />
+
                         <div className="flex gap-3">
                             <button
-                                onClick={() => { setPaymentMethod(null); setTransactionId(''); reset() }}
+                                onClick={() => { setPaymentMethod(null); setTransactionId(''); setPhoneNumber(''); reset() }}
                                 className="px-5 py-3 rounded-xl border border-slate-200 dark:border-white/10 text-slate-700 dark:text-slate-300 font-bold hover:bg-slate-50 dark:hover:bg-white/5 transition-all"
                             >
                                 Back
                             </button>
                             <button
-                                disabled={!transactionId.trim()}
+                                disabled={!transactionId.trim() || !phoneNumber.trim()}
                                 onClick={handleSubmit}
                                 className="flex-1 py-3 rounded-xl bg-primary text-white font-bold hover:bg-indigo-500 shadow-lg shadow-primary/20 transition-all disabled:opacity-40 disabled:cursor-not-allowed"
                             >
