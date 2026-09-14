@@ -48,8 +48,8 @@ export default function SideBar({
     const progress = totalCount > 0 ? Math.round((processedCount / totalCount) * 100) : 0
 
     return (
-        <div className="lg:col-span-5 self-start">
-            <div className="bg-white dark:bg-slate-900/40 rounded-xl shadow-sm border border-slate-200 dark:border-slate-800 p-6 flex flex-col gap-6 sticky top-24 max-h-[calc(100vh-7rem)] overflow-y-auto scrollbar-thin">
+<div className="lg:col-span-5 self-start sticky top-24 max-h-[calc(100vh-7rem)] flex flex-col gap-6">
+                <div className="bg-white dark:bg-slate-900/40 rounded-xl shadow-sm border border-slate-200 dark:border-slate-800 p-6 flex flex-col gap-6 flex-1 min-h-0 overflow-y-auto scrollbar-thin">
                 <div className="flex flex-col gap-3">
                     <div className="flex justify-between items-end">
                         <h4 className="text-slate-900 dark:text-white text-sm font-bold uppercase tracking-widest">Queue Progress</h4>
@@ -116,7 +116,6 @@ export default function SideBar({
                         </div>
                     </div>
                 </div>
-                <CurrentSubscription/>
                 <div className="flex flex-col gap-3 pt-4 border-t border-slate-100 dark:border-slate-900/40">
                     {isProcessing ? (
                         <button onClick={onStop} className="w-full h-14 bg-red-500 text-white text-base font-black rounded-lg shadow-xl shadow-red-500/30 hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center justify-center gap-2 uppercase tracking-widest">
@@ -131,6 +130,11 @@ export default function SideBar({
                     )}
                     <p className="text-center text-[10px] text-slate-400 dark:text-slate-500 font-medium tracking-wide">{queueCount} file{queueCount !== 1 ? 's' : ''} pending</p>
                 </div>
+            </div>
+
+            {/* --- Current Subscription (separate card) --- */}
+            <div className="bg-white dark:bg-slate-900/40 rounded-xl shadow-sm border border-slate-200 dark:border-slate-800 p-6">
+                <CurrentSubscription/>
             </div>
         </div>
     )
