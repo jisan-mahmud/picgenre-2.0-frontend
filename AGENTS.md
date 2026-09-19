@@ -14,7 +14,7 @@ React Compiler enabled via `babel-plugin-react-compiler`.
 ## Architecture
 - **API base URL**: `VITE_API_BASE_URL` (defaults to `http://localhost:8007/api`)
 - **Auth**: Firebase Google sign-in, JWT in localStorage, axios interceptors handle refresh
-- **Routes**: `/`, `/workspace`, `/settings/*`, `/pricing`, `/privacy-policy`, `/shop`, `/login`
+- **Routes**: `/`, `/workspace`, `/settings/*`, `/pricing`, `/features`, `/privacy-policy`, `/login`
 - **Protected routes**: `/workspace` and `/settings/*` via `<ProtectedRoute>`
 - **Deployed on Vercel** (SPA rewrites in `vercel.json`)
 
