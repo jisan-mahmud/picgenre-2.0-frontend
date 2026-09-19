@@ -11,6 +11,7 @@ import NewUserKeyModal, { NEW_USER_POPUP_DISMISS_KEY } from '../components/works
 import { analyzeImage, DEFAULT_PLATFORM, PLATFORMS } from '../utils/geminiService'
 import { convertEpsToJpg } from '../utils/convertEps'
 import { generateCSV, downloadCSV } from '../utils/csvExport'
+import { useCurrentSubscription } from '../hooks/useApi'
 
 const makePreview = (file) => {
     const ext = file.name.split('.').pop().toLowerCase()
@@ -25,6 +26,8 @@ const nextId = () => `file-${Date.now()}-${idCounter++}`
 
 export default function Workspace() {
     const queryClient = useQueryClient()
+    const { data: subscription } = useCurrentSubscription()
+    const isPremium = (subscription?.plan?.tier || '') !== 'FREE'
     const [queueItems, setQueueItems] = useState([])
     const [processedFiles, setProcessedFiles] = useState([])
     const [platform, setPlatform] = useState(DEFAULT_PLATFORM)
@@ -191,6 +194,30 @@ export default function Workspace() {
         setToast({ message: `Exported ${processedFiles.length} files to CSV`, type: 'success' })
     }
 
+    const handleSaveHistory = async () => {
+        if (processedFiles.length === 0) {
+            setToast({ message: 'No processed metadata to save', type: 'error' })
+            return
+        }
+        try {
+            const csv = generateCSV(processedFiles)
+            const formData = new FormData()
+            formData.append('file', new Blob([csv], { type: 'text/csv' }), `picgenre-metadata-${new Date().toISOString().slice(0, 10)}.csv`)
+            formData.append('file_count', String(processedFiles.length))
+            await axiosPrivate.post('/v1/history/create/', formData, {
+                headers: { 'Content-Type': 'multipart/form-data' },
+            })
+            queryClient.invalidateQueries({ queryKey: ['history'] })
+            setToast({ message: `Saved ${processedFiles.length} files to history`, type: 'success' })
+        } catch (error) {
+            if (error?.response?.status === 403) {
+                setToast({ message: 'Save to history is a premium feature. Upgrade your plan to continue.', type: 'error' })
+                return
+            }
+            setToast({ message: 'Failed to save CSV to history. Please try again.', type: 'error' })
+        }
+    }
+
     return (
         <div>
             <div className="layout-container flex h-full grow flex-col">
@@ -218,6 +245,8 @@ export default function Workspace() {
                             <ProcessedFile
                                 files={processedFiles}
                                 onExportAll={handleExportAll}
+                                onSaveHistory={handleSaveHistory}
+                                canSaveHistory={isPremium}
                             />
                         </div>
                         <SideBar

@@ -1,8 +1,11 @@
 import React, { useState } from 'react'
-import { CheckCircle, Download, Image, Clock, Copy, Tag, FileText, AlignLeft } from 'lucide-react'
+import { useNavigate } from 'react-router-dom'
+import { CheckCircle, Download, Image, Clock, Copy, Tag, FileText, AlignLeft, BookmarkPlus, Lock } from 'lucide-react'
 import Toast from '../ui/Toast'
+import Tooltip from '../ui/Tooltip'
 
-export default function ProcessedFile({ files = [], onExportAll }) {
+export default function ProcessedFile({ files = [], onExportAll, onSaveHistory, canSaveHistory = false }) {
+    const navigate = useNavigate()
     const [toast, setToast] = useState(null)
 
     const copyToClipboard = (text, type) => {
@@ -19,6 +22,19 @@ export default function ProcessedFile({ files = [], onExportAll }) {
         onExportAll?.()
     }
 
+    const handleSaveHistory = () => {
+        if (files.length === 0) {
+            setToast({ message: 'No processed metadata to save', type: 'error' })
+            return
+        }
+        if (!canSaveHistory) {
+            setToast({ message: 'Save to history is a premium feature. Upgrade your plan to continue.', type: 'error' })
+            navigate('/pricing')
+            return
+        }
+        onSaveHistory?.()
+    }
+
     return (
         <div className="flex flex-col gap-4">
             <div className="flex items-center justify-between">
@@ -26,14 +42,40 @@ export default function ProcessedFile({ files = [], onExportAll }) {
                     <CheckCircle className="w-5 h-5 text-green-500" />
                     <h3 className="text-slate-900 dark:text-white text-lg font-bold font-display">Processed Results ({files.length})</h3>
                 </div>
-                <button
-                    onClick={handleExportAll}
-                    disabled={files.length === 0}
-                    className="flex items-center gap-2 px-4 py-2 bg-slate-100 dark:bg-slate-900/40 hover:bg-slate-200 dark:hover:bg-slate-900 rounded-lg text-sm font-bold text-slate-700 dark:text-white transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-                    title="Download all metadata as CSV"
-                >
-                    <Download className="w-4 h-4" /> Export All
-                </button>
+                <div className="flex items-center gap-2">
+                    <Tooltip
+                        title="Export all"
+                        description="Download the metadata CSV for every processed file to your device."
+                    >
+                        <button
+                            onClick={handleExportAll}
+                            disabled={files.length === 0}
+                            className="flex items-center gap-2 px-4 py-2 bg-slate-100 dark:bg-slate-900/40 hover:bg-slate-200 dark:hover:bg-slate-900 rounded-lg text-sm font-bold text-slate-700 dark:text-white transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                            <Download className="w-4 h-4" /> Export All
+                        </button>
+                    </Tooltip>
+                    <Tooltip
+                        title={canSaveHistory ? 'Save to history' : 'Premium feature'}
+                        description={canSaveHistory
+                            ? files.length === 0
+                                ? 'Nothing to save yet — generate metadata first.'
+                                : 'Store this batch\'s metadata CSV in your account and download it anytime from Batch History.'
+                            : 'Upgrade to save your metadata CSV and download it later from Batch History.'}
+                    >
+                        <button
+                            onClick={handleSaveHistory}
+                            disabled={files.length === 0}
+                            className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-bold transition-all disabled:opacity-50 disabled:cursor-not-allowed ${
+                                canSaveHistory
+                                    ? 'bg-primary text-white hover:brightness-110'
+                                    : 'bg-slate-100 dark:bg-slate-900/40 text-slate-500 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-900'
+                            }`}
+                        >
+                            {canSaveHistory ? <BookmarkPlus className="w-4 h-4" /> : <Lock className="w-4 h-4" />} Save to History
+                        </button>
+                    </Tooltip>
+                </div>
             </div>
             <div className="grid grid-cols-1 gap-4">
                 {files.length === 0 ? (
