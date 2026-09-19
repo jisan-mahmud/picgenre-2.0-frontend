@@ -24,10 +24,9 @@ export default function Header() {
                         <Link to="/" className="text-lg sm:text-xl font-bold tracking-tight">Picgenre</Link>
                     </div>
                     <nav className="hidden md:flex items-center gap-6 lg:gap-8">
-                        <a className="text-sm font-medium hover:text-primary transition-colors" href="#">Features</a>
+                        <Link to="/features" className="text-sm font-medium hover:text-primary transition-colors">Features</Link>
                         <Link to="/how-it-works" className="text-sm font-medium hover:text-primary transition-colors" href="#">How It Works</Link>
                         <Link to="/pricing" className="text-sm font-medium hover:text-primary transition-colors">Pricing</Link>
-                        <Link to="/shop" className="text-sm font-medium hover:text-primary transition-colors">Shop</Link>
                     </nav>
                     <div className="flex items-center gap-2 sm:gap-3">
                         <button 
@@ -99,10 +98,9 @@ export default function Header() {
                 {isMenuOpen && !isAuthenticated() && (
                     <div className="md:hidden border-t border-slate-200 dark:border-slate-800 bg-background-light dark:bg-background-dark">
                         <nav className="px-4 py-4 space-y-3">
-                            <a className="block text-sm font-medium hover:text-primary transition-colors py-2" href="#">Features</a>
+                            <Link to="/features" className="block text-sm font-medium hover:text-primary transition-colors py-2">Features</Link>
                             <Link to="/how-it-works" className="block text-sm font-medium hover:text-primary transition-colors py-2" href="#">How It Works</Link>
                             <Link to="/pricing" className="block text-sm font-medium hover:text-primary transition-colors py-2">Pricing</Link>
-                            <Link to="/shop" className="block text-sm font-medium hover:text-primary transition-colors py-2">Shop</Link>
                             <div className="pt-3 border-t border-slate-200 dark:border-slate-800 space-y-3">
                                 <Link to="/login" className="block text-sm font-semibold py-2 hover:text-primary transition-colors">
                                     Sign In

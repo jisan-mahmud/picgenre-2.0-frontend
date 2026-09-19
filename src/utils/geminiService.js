@@ -70,7 +70,7 @@ function formatGeminiError(error) {
     return 'Gemini API quota exceeded. Please try again later or upgrade your plan.'
   }
   if (code === 401 || /api.?key|invalid.?key|permission.?denied/i.test(raw)) {
-    return 'Invalid Gemini API key. Check your VITE_GEMINI_API_KEY in .env.'
+    return 'Invalid Gemini API key. Add your own key in Settings -> AI Models or upgrade your plan.'
   }
   if (code === 403) {
     return 'Gemini API access denied. Check your API key permissions.'
