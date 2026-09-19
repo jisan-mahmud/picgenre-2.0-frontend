@@ -1,15 +1,16 @@
-import React, { useRef, useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
+import { useQueryClient } from '@tanstack/react-query'
 import { CloudUpload } from 'lucide-react'
+import { axiosPrivate } from '../api_call/axiosInstance'
 import UploadAssets from '../components/workspace/UploadAssets'
 import FileQueue from '../components/workspace/FileQueue'
 import ProcessedFile from '../components/workspace/ProcessedFile'
 import SideBar from '../components/workspace/SideBar'
 import Toast from '../components/ui/Toast'
+import NewUserKeyModal, { NEW_USER_POPUP_DISMISS_KEY } from '../components/workspace/NewUserKeyModal'
 import { analyzeImage, DEFAULT_PLATFORM, PLATFORMS } from '../utils/geminiService'
 import { convertEpsToJpg } from '../utils/convertEps'
 import { generateCSV, downloadCSV } from '../utils/csvExport'
-
-const GEMINI_API_KEY = import.meta.env.VITE_GEMINI_API_KEY || ''
 
 const makePreview = (file) => {
     const ext = file.name.split('.').pop().toLowerCase()
@@ -23,6 +24,7 @@ let idCounter = 0
 const nextId = () => `file-${Date.now()}-${idCounter++}`
 
 export default function Workspace() {
+    const queryClient = useQueryClient()
     const [queueItems, setQueueItems] = useState([])
     const [processedFiles, setProcessedFiles] = useState([])
     const [platform, setPlatform] = useState(DEFAULT_PLATFORM)
@@ -30,7 +32,24 @@ export default function Workspace() {
     const [settings, setSettings] = useState({ ...PLATFORMS[DEFAULT_PLATFORM] })
     const [isProcessing, setIsProcessing] = useState(false)
     const [toast, setToast] = useState(null)
+    const [showNewUserPopup, setShowNewUserPopup] = useState(false)
     const isStoppedRef = useRef(false)
+
+    useEffect(() => {
+        let ignore = false
+        const checkNewUser = async () => {
+            if (localStorage.getItem(NEW_USER_POPUP_DISMISS_KEY)) return
+            try {
+                await axiosPrivate.get('/v1/models/active-gemini-key/')
+            } catch (error) {
+                if (!ignore && error?.response?.data?.code === 'new_user_no_key') {
+                    setShowNewUserPopup(true)
+                }
+            }
+        }
+        checkNewUser()
+        return () => { ignore = true }
+    }, [])
 
     const handleUpload = (files) => {
         const items = files.map((file) => ({
@@ -66,8 +85,19 @@ export default function Workspace() {
         const workItems = queueItems.filter(item => item.status !== 'processing')
         if (workItems.length === 0) return
 
-        if (!GEMINI_API_KEY || GEMINI_API_KEY === 'YOUR_GEMINI_API_KEY_HERE') {
-            setToast({ message: 'Set VITE_GEMINI_API_KEY in .env to use Gemini', type: 'error' })
+        let activeKey
+        try {
+            const { data } = await axiosPrivate.get('/v1/models/active-gemini-key/')
+            activeKey = data
+        } catch (error) {
+            if (error?.response?.data?.code === 'new_user_no_key') {
+                setShowNewUserPopup(true)
+                return
+            }
+            setToast({
+                message: error?.response?.data?.detail || 'Unable to get a Gemini API key.',
+                type: 'error',
+            })
             return
         }
 
@@ -76,6 +106,7 @@ export default function Workspace() {
 
         let failedCount = 0
         let firstError = null
+        let successCount = 0
 
         const processItem = async (item) => {
             if (isStoppedRef.current) return
@@ -87,7 +118,8 @@ export default function Workspace() {
                     fileToAnalyze = await convertEpsToJpg(item.file)
                 }
 
-                const result = await analyzeImage(fileToAnalyze, platform, customPrompt, GEMINI_API_KEY, settings)
+                const result = await analyzeImage(fileToAnalyze, platform, customPrompt, activeKey.api_key, settings)
+                successCount++
                 setProcessedFiles(prev => [...prev, {
                     ...result,
                     name: item.file.name,
@@ -120,6 +152,15 @@ export default function Workspace() {
             )
         } finally {
             setIsProcessing(false)
+        }
+
+        if (activeKey.source === 'admin' && successCount > 0) {
+            try {
+                await axiosPrivate.post('/v1/subscription/consume/', { count: successCount })
+                queryClient.invalidateQueries({ queryKey: ['subscription', 'current'] })
+            } catch (error) {
+                console.error('Failed to consume credits:', error)
+            }
         }
 
         if (failedCount > 0) {
@@ -197,6 +238,7 @@ export default function Workspace() {
                 </main>
             </div>
             {toast && <Toast message={toast.message} type={toast.type} onClose={() => setToast(null)} />}
+            {showNewUserPopup && <NewUserKeyModal onClose={() => setShowNewUserPopup(false)} />}
         </div>
     )
 }
