@@ -1,4 +1,4 @@
-const MAX_DIMENSION = 1280
+const MAX_DIMENSION = 1024
 
 const readAsDataUrl = (file) => new Promise((resolve, reject) => {
   const reader = new FileReader()
@@ -12,9 +12,8 @@ const toBase64 = (dataUrl) => dataUrl.split(',')[1]
 export async function prepareImageForGemini(file, maxDimension = MAX_DIMENSION) {
   const mimeType = file.type || 'image/jpeg'
   const supported = ['image/jpeg', 'image/png', 'image/webp']
-  const isSmallEnough = file.size <= 1024 * 1024
 
-  if (!supported.includes(mimeType) || isSmallEnough) {
+  if (!supported.includes(mimeType)) {
     const dataUrl = await readAsDataUrl(file)
     return { base64: toBase64(dataUrl), mimeType }
   }
@@ -41,7 +40,7 @@ export async function prepareImageForGemini(file, maxDimension = MAX_DIMENSION) 
     canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height)
 
     const outMime = mimeType === 'image/png' ? 'image/png' : 'image/jpeg'
-    const outDataUrl = canvas.toDataURL(outMime, 0.9)
+    const outDataUrl = canvas.toDataURL(outMime, 0.85)
     return { base64: toBase64(outDataUrl), mimeType: outMime }
   } finally {
     URL.revokeObjectURL(objectUrl)

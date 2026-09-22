@@ -8,6 +8,7 @@ import ProcessedFile from '../components/workspace/ProcessedFile'
 import SideBar from '../components/workspace/SideBar'
 import Toast from '../components/ui/Toast'
 import NewUserKeyModal, { NEW_USER_POPUP_DISMISS_KEY } from '../components/workspace/NewUserKeyModal'
+import CreditsExhaustedModal from '../components/workspace/CreditsExhaustedModal'
 import { analyzeImage, DEFAULT_PLATFORM, PLATFORMS } from '../utils/geminiService'
 import { convertEpsToJpg } from '../utils/convertEps'
 import { generateCSV, downloadCSV } from '../utils/csvExport'
@@ -27,7 +28,7 @@ const nextId = () => `file-${Date.now()}-${idCounter++}`
 export default function Workspace() {
     const queryClient = useQueryClient()
     const { data: subscription } = useCurrentSubscription()
-    const isPremium = (subscription?.plan?.tier || '') !== 'FREE'
+    const isPremium = subscription?.plan?.tier === 'BASIC' || subscription?.plan?.tier === 'PRO'
     const [queueItems, setQueueItems] = useState([])
     const [processedFiles, setProcessedFiles] = useState([])
     const [platform, setPlatform] = useState(DEFAULT_PLATFORM)
@@ -36,7 +37,16 @@ export default function Workspace() {
     const [isProcessing, setIsProcessing] = useState(false)
     const [toast, setToast] = useState(null)
     const [showNewUserPopup, setShowNewUserPopup] = useState(false)
+    const [showCreditsModal, setShowCreditsModal] = useState(false)
     const isStoppedRef = useRef(false)
+
+    const getCurrentSubscription = async () => {
+        queryClient.invalidateQueries({ queryKey: ['subscription', 'current'] })
+        return queryClient.fetchQuery({
+            queryKey: ['subscription', 'current'],
+            queryFn: async () => (await axiosPrivate.get('/v1/subscription/current/')).data,
+        })
+    }
 
     useEffect(() => {
         let ignore = false
@@ -91,14 +101,26 @@ export default function Workspace() {
         let activeKey
         try {
             const { data } = await axiosPrivate.get('/v1/models/active-gemini-key/')
-            activeKey = data
+            activeKey = { apiKey: data.api_key, source: data.source }
         } catch (error) {
-            if (error?.response?.data?.code === 'new_user_no_key') {
+            const { code, detail } = error?.response?.data || {}
+            if (code === 'new_user_no_key') {
                 setShowNewUserPopup(true)
                 return
             }
+            if (code === 'premium_no_key') {
+                setShowCreditsModal(true)
+                return
+            }
+            if (code === 'free_trial_ended') {
+                setToast({
+                    message: detail || 'Your free trial period has ended. Upgrade to a plan to continue processing images.',
+                    type: 'error',
+                })
+                return
+            }
             setToast({
-                message: error?.response?.data?.detail || 'Unable to get a Gemini API key.',
+                message: detail || 'Unable to get a Gemini API key.',
                 type: 'error',
             })
             return
@@ -109,7 +131,72 @@ export default function Workspace() {
 
         let failedCount = 0
         let firstError = null
-        let successCount = 0
+        let stoppedForCredits = false
+
+        let usesAdminCredits = activeKey.source === 'admin'
+        let creditsLeft = Number.MAX_SAFE_INTEGER
+        let inFlight = 0
+
+        if (usesAdminCredits) {
+            try {
+                creditsLeft = (await getCurrentSubscription())?.remaining_credit ?? 0
+            } catch {
+                creditsLeft = 0
+            }
+        }
+
+        const consumeCredit = async () => {
+            if (!usesAdminCredits) return true
+            try {
+                const { data } = await axiosPrivate.post('/v1/subscription/consume/', { count: 1 })
+                creditsLeft = data.remaining_credit
+                queryClient.invalidateQueries({ queryKey: ['subscription', 'current'] })
+                return true
+            } catch (error) {
+                console.error('Failed to consume credits:', error)
+                return false
+            }
+        }
+
+        const handleCreditsExhausted = async () => {
+            try {
+                const { data } = await axiosPrivate.get('/v1/models/active-gemini-key/')
+                activeKey = { apiKey: data.api_key, source: data.source }
+                if (data.source === 'user') {
+                    usesAdminCredits = false
+                    creditsLeft = Number.MAX_SAFE_INTEGER
+                    setToast({
+                        message: 'Plan credits finished. Continuing with your own Gemini API key.',
+                        type: 'success',
+                    })
+                    return 'continue'
+                }
+                try {
+                    creditsLeft = (await getCurrentSubscription())?.remaining_credit ?? 0
+                } catch {
+                    creditsLeft = 0
+                }
+                return 'continue'
+            } catch (error) {
+                const { code, detail } = error?.response?.data || {}
+                if (code === 'premium_no_key') {
+                    setShowCreditsModal(true)
+                    return 'stop'
+                }
+                if (code === 'free_trial_ended') {
+                    setToast({
+                        message: detail || 'Your free trial period has ended. Upgrade to a plan to continue processing images.',
+                        type: 'error',
+                    })
+                    return 'stop'
+                }
+                setToast({
+                    message: detail || 'Unable to get a Gemini API key.',
+                    type: 'error',
+                })
+                return 'stop'
+            }
+        }
 
         const processItem = async (item) => {
             if (isStoppedRef.current) return
@@ -121,8 +208,7 @@ export default function Workspace() {
                     fileToAnalyze = await convertEpsToJpg(item.file)
                 }
 
-                const result = await analyzeImage(fileToAnalyze, platform, customPrompt, activeKey.api_key, settings)
-                successCount++
+                const result = await analyzeImage(fileToAnalyze, platform, customPrompt, activeKey.apiKey, settings, activeKey.source)
                 setProcessedFiles(prev => [...prev, {
                     ...result,
                     name: item.file.name,
@@ -130,6 +216,15 @@ export default function Workspace() {
                     platform,
                 }])
                 setQueueItems(prev => prev.filter(i => i.id !== item.id))
+
+                const ok = await consumeCredit()
+                if (!ok) {
+                    const outcome = await handleCreditsExhausted()
+                    if (outcome !== 'continue') {
+                        stoppedForCredits = true
+                        isStoppedRef.current = true
+                    }
+                }
             } catch (error) {
                 failedCount++
                 if (!firstError) firstError = error?.message || 'Unknown error'
@@ -144,9 +239,28 @@ export default function Workspace() {
 
             const worker = async () => {
                 while (!isStoppedRef.current) {
+                    if (usesAdminCredits) {
+                        if (inFlight >= creditsLeft) {
+                            if (creditsLeft <= 0) {
+                                const outcome = await handleCreditsExhausted()
+                                if (outcome !== 'continue') {
+                                    stoppedForCredits = true
+                                    isStoppedRef.current = true
+                                }
+                                return
+                            }
+                            await new Promise(resolve => setTimeout(resolve, 60))
+                            continue
+                        }
+                    }
                     const idx = nextIndex++
                     if (idx >= workItems.length) return
-                    await processItem(workItems[idx])
+                    inFlight++
+                    try {
+                        await processItem(workItems[idx])
+                    } finally {
+                        inFlight--
+                    }
                 }
             }
 
@@ -157,26 +271,24 @@ export default function Workspace() {
             setIsProcessing(false)
         }
 
-        if (activeKey.source === 'admin' && successCount > 0) {
-            try {
-                await axiosPrivate.post('/v1/subscription/consume/', { count: successCount })
-                queryClient.invalidateQueries({ queryKey: ['subscription', 'current'] })
-            } catch (error) {
-                console.error('Failed to consume credits:', error)
+        if (!stoppedForCredits) {
+            if (failedCount > 0) {
+                const detail = firstError || 'Unknown error'
+                setToast({
+                    message: failedCount === 1
+                        ? `${detail} Click Generate to retry.`
+                        : `${failedCount} files failed. ${detail} Click Generate to retry.`,
+                    type: 'error',
+                })
+            } else {
+                setToast({ message: 'All files processed successfully', type: 'success' })
             }
         }
+    }
 
-        if (failedCount > 0) {
-            const detail = firstError || 'Unknown error'
-            setToast({
-                message: failedCount === 1
-                    ? `${detail} Click Generate to retry.`
-                    : `${failedCount} files failed. ${detail} Click Generate to retry.`,
-                type: 'error',
-            })
-        } else {
-            setToast({ message: 'All files processed successfully', type: 'success' })
-        }
+    const handleContinueWithOwnKey = () => {
+        setShowCreditsModal(false)
+        handleGenerate()
     }
 
     const handleStop = () => {
@@ -268,6 +380,13 @@ export default function Workspace() {
             </div>
             {toast && <Toast message={toast.message} type={toast.type} onClose={() => setToast(null)} />}
             {showNewUserPopup && <NewUserKeyModal onClose={() => setShowNewUserPopup(false)} />}
+            {showCreditsModal && (
+                <CreditsExhaustedModal
+                    hasOwnKey={false}
+                    onContinueWithOwnKey={handleContinueWithOwnKey}
+                    onClose={() => setShowCreditsModal(false)}
+                />
+            )}
         </div>
     )
 }

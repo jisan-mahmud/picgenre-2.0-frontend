@@ -27,11 +27,22 @@ export const PLATFORMS = {
 
 export const DEFAULT_PLATFORM = 'Adobe Stock'
 
-const MODEL = 'models/gemini-3.6-flash'
-const MAX_RETRIES = 2
-const REQUEST_TIMEOUT_MS = 90 * 1000
+const MODEL = 'models/gemini-3.5-flash-lite'
+const MAX_RETRIES = 1
+const REQUEST_TIMEOUT_MS = 45 * 1000
 
 const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms))
+
+let cachedClient = null
+let cachedClientKey = null
+
+function getClient(apiKey) {
+  if (!cachedClient || cachedClientKey !== apiKey) {
+    cachedClient = new GoogleGenAI({ apiKey })
+    cachedClientKey = apiKey
+  }
+  return cachedClient
+}
 
 export function extractJson(text) {
   if (!text) throw new Error('Empty response from Gemini')
@@ -62,12 +73,14 @@ function isRetryable(error) {
   return false
 }
 
-function formatGeminiError(error) {
+function formatGeminiError(error, keySource) {
   const raw = String(error?.message || error || '')
   const code = error?.status || error?.statusCode
 
   if (code === 429 || /RESOURCE_EXHAUSTED|quota exceeded|rate limit/i.test(raw)) {
-    return 'Gemini API quota exceeded. Please try again later or upgrade your plan.'
+    return keySource === 'user'
+      ? 'Your API quota limit has been reached. Try again later or check your own key in Settings -> AI Models.'
+      : 'System is currently overloaded — file processing can be slow. Please try again in a few minutes.'
   }
   if (code === 401 || /api.?key|invalid.?key|permission.?denied/i.test(raw)) {
     return 'Invalid Gemini API key. Add your own key in Settings -> AI Models or upgrade your plan.'
@@ -86,22 +99,19 @@ function formatGeminiError(error) {
   return short || 'Gemini API error.'
 }
 
-export async function analyzeImage(imageFile, platform, customPrompt, apiKey, settings = {}, maxRetries = MAX_RETRIES) {
+export async function analyzeImage(imageFile, platform, customPrompt, apiKey, settings = {}, keySource = null, maxRetries = MAX_RETRIES) {
   const { base64, mimeType } = await prepareImageForGemini(imageFile)
   const base = PLATFORMS[platform] || PLATFORMS[DEFAULT_PLATFORM]
   const { minKeywords, maxKeywords, minTitleWords, maxTitleWords } = { ...base, ...settings }
 
-  const ai = new GoogleGenAI({ apiKey })
+  const ai = getClient(apiKey)
 
   const prompt =
-    'Analyze this image and return metadata as valid JSON.\n' +
-    `Rules:\n` +
-    `- "title": descriptive, exactly ${minTitleWords}-${maxTitleWords} words, no symbols, no colons\n` +
-    `- "tags": array of ${minKeywords}-${maxKeywords} relevant keyword strings\n` +
-    `- "description": 1-3 sentence description of the image\n` +
-    (mimeType === 'image/png' ? '- The image has a transparent background\n' : '') +
-    (customPrompt ? `${customPrompt}\n` : '') +
-    'Return ONLY the JSON object with title, tags, description fields.'
+    `Title ${minTitleWords}-${maxTitleWords} words, no symbols or colons. ` +
+    `${minKeywords}-${maxKeywords} keyword tags. ` +
+    '1-3 sentence description.' +
+    (mimeType === 'image/png' ? ' Transparent background.' : '') +
+    (customPrompt ? ` ${customPrompt}` : '')
 
   let lastError = null
 
@@ -134,16 +144,16 @@ export async function analyzeImage(imageFile, platform, customPrompt, apiKey, se
             properties: {
               title: {
                 type: Type.STRING,
-                description: `Descriptive title (exactly ${minTitleWords}-${maxTitleWords} words, no symbols, no colons)`,
+                description: `Title, ${minTitleWords}-${maxTitleWords} words, no symbols/colons`,
               },
               tags: {
                 type: Type.ARRAY,
-                description: 'Relevant tags for the image',
+                description: 'Keyword tags',
                 items: { type: Type.STRING },
               },
               description: {
                 type: Type.STRING,
-                description: 'Describe image',
+                description: 'Image description',
               },
             },
             required: ['title', 'tags', 'description'],
@@ -161,7 +171,7 @@ export async function analyzeImage(imageFile, platform, customPrompt, apiKey, se
     } catch (error) {
       const err = controller.signal.aborted
         ? new Error(`Request timed out after ${Math.round(REQUEST_TIMEOUT_MS / 1000)}s`)
-        : new Error(formatGeminiError(error))
+        : new Error(formatGeminiError(error, keySource))
       lastError = err
       if (!isRetryable(error) || attempt >= maxRetries) {
         throw err
