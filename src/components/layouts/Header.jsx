@@ -25,6 +25,7 @@ export default function Header() {
                     </div>
                     <nav className="hidden md:flex items-center gap-6 lg:gap-8">
                         <Link to="/features" className="text-sm font-medium hover:text-primary transition-colors">Features</Link>
+                        <Link to="/tools" className="text-sm font-medium hover:text-primary transition-colors">Tools</Link>
                         <Link to="/how-it-works" className="text-sm font-medium hover:text-primary transition-colors" href="#">How It Works</Link>
                         <Link to="/pricing" className="text-sm font-medium hover:text-primary transition-colors">Pricing</Link>
                     </nav>
@@ -56,6 +57,13 @@ export default function Header() {
                                             onClick={() => setIsMenuOpen(false)}
                                         >
                                             Workspace
+                                        </Link>
+                                        <Link
+                                            to="/tools"
+                                            className="block px-4 py-2 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700"
+                                            onClick={() => setIsMenuOpen(false)}
+                                        >
+                                            Tools
                                         </Link>
                                         <Link
                                             to="/settings"
@@ -99,6 +107,7 @@ export default function Header() {
                     <div className="md:hidden border-t border-slate-200 dark:border-slate-800 bg-background-light dark:bg-background-dark">
                         <nav className="px-4 py-4 space-y-3">
                             <Link to="/features" className="block text-sm font-medium hover:text-primary transition-colors py-2">Features</Link>
+                            <Link to="/tools" className="block text-sm font-medium hover:text-primary transition-colors py-2">Tools</Link>
                             <Link to="/how-it-works" className="block text-sm font-medium hover:text-primary transition-colors py-2" href="#">How It Works</Link>
                             <Link to="/pricing" className="block text-sm font-medium hover:text-primary transition-colors py-2">Pricing</Link>
                             <div className="pt-3 border-t border-slate-200 dark:border-slate-800 space-y-3">

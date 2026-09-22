@@ -18,6 +18,7 @@ import PrivacyPolicy from './pages/PrivacyPolicy';
 import Features from './pages/Features';
 import Feedback from './pages/Feedback';
 import HowItWorks from './pages/HowItWorks';
+import Tools from './pages/Tools';
 import NotFoundPage from './pages/NotFoundPage';
 
 function App() {
@@ -30,6 +31,11 @@ function App() {
             <Route path="/workspace" element={
               <ProtectedRoute>
                 <Workspace />
+              </ProtectedRoute>
+            } />
+            <Route path="/tools" element={
+              <ProtectedRoute>
+                <Tools />
               </ProtectedRoute>
             } />
             <Route path="/settings" element={

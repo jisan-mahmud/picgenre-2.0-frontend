@@ -24,6 +24,11 @@ export default function NewUserKeyModal({ onClose }) {
         navigate('/settings/ai-models')
     }
 
+    const handleUpgrade = () => {
+        if (dontShowAgain) localStorage.setItem(NEW_USER_POPUP_DISMISS_KEY, '1')
+        navigate('/pricing')
+    }
+
     return (
         <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-fade-in-up" onClick={handleDismiss}>
             <div className="relative w-full max-w-md rounded-2xl bg-white dark:bg-slate-900 p-6 sm:p-8 shadow-2xl ring-1 ring-slate-900/5 dark:ring-slate-700/50 animate-scale-in" onClick={(e) => e.stopPropagation()}>
@@ -44,10 +49,10 @@ export default function NewUserKeyModal({ onClose }) {
                     </div>
 
                     <h3 className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-white font-display">
-                        Generate metadata for free
+                        Keep processing — your way
                     </h3>
                     <p className="mt-2 text-sm text-slate-500 dark:text-slate-400 leading-relaxed max-w-sm">
-                        As a new user you can process images free during your first month. Just add your own Gemini API key and start generating without using any credits.
+                        As a new user you can process images free during your first month. Add your own Gemini API key to generate without using credits — or upgrade to a plan for fast credits and no limits.
                     </p>
                 </div>
 
@@ -60,7 +65,7 @@ export default function NewUserKeyModal({ onClose }) {
                     ))}
                 </div>
 
-                <div className="mt-6">
+                <div className="mt-6 flex flex-col gap-2">
                     <button
                         onClick={handleAddKey}
                         className="w-full flex items-center justify-center gap-2 rounded-xl bg-primary hover:bg-primary/90 text-white font-semibold py-3 px-4 shadow-lg shadow-primary/20 transition-all hover:scale-[1.01] active:scale-[0.99]"
@@ -69,8 +74,14 @@ export default function NewUserKeyModal({ onClose }) {
                         <ArrowRight size={18} />
                     </button>
                     <button
+                        onClick={handleUpgrade}
+                        className="w-full flex items-center justify-center gap-2 rounded-xl border border-slate-200 dark:border-white/10 text-slate-900 dark:text-white font-semibold py-3 px-4 hover:bg-slate-50 dark:hover:bg-white/5 transition-all"
+                    >
+                        Upgrade to a plan
+                    </button>
+                    <button
                         onClick={handleDismiss}
-                        className="w-full mt-2 rounded-xl py-2.5 text-sm font-medium text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-100 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+                        className="w-full rounded-xl py-2.5 text-sm font-medium text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-100 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
                     >
                         Maybe later
                     </button>

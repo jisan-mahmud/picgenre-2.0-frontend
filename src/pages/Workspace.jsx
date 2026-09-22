@@ -1,6 +1,6 @@
-import React, { useEffect, useRef, useState } from 'react'
+import React, { useRef, useState } from 'react'
 import { useQueryClient } from '@tanstack/react-query'
-import { CloudUpload } from 'lucide-react'
+import { CloudUpload, Loader2 } from 'lucide-react'
 import { axiosPrivate } from '../api_call/axiosInstance'
 import UploadAssets from '../components/workspace/UploadAssets'
 import FileQueue from '../components/workspace/FileQueue'
@@ -9,6 +9,7 @@ import SideBar from '../components/workspace/SideBar'
 import Toast from '../components/ui/Toast'
 import NewUserKeyModal, { NEW_USER_POPUP_DISMISS_KEY } from '../components/workspace/NewUserKeyModal'
 import CreditsExhaustedModal from '../components/workspace/CreditsExhaustedModal'
+import LockedFeatureCard from '../components/LockedFeatureCard'
 import { analyzeImage, DEFAULT_PLATFORM, PLATFORMS } from '../utils/geminiService'
 import { convertEpsToJpg } from '../utils/convertEps'
 import { generateCSV, downloadCSV } from '../utils/csvExport'
@@ -29,6 +30,9 @@ export default function Workspace() {
     const queryClient = useQueryClient()
     const { data: subscription } = useCurrentSubscription()
     const isPremium = subscription?.plan?.tier === 'BASIC' || subscription?.plan?.tier === 'PRO'
+    const isNewUser = subscription?.is_new_user === true
+    const hasWorkspaceAccess = subscription && (isPremium || isNewUser)
+    const workspaceLoading = subscription === undefined
     const [queueItems, setQueueItems] = useState([])
     const [processedFiles, setProcessedFiles] = useState([])
     const [platform, setPlatform] = useState(DEFAULT_PLATFORM)
@@ -49,22 +53,6 @@ export default function Workspace() {
             queryFn: async () => (await axiosPrivate.get('/v1/subscription/current/')).data,
         })
     }
-
-    useEffect(() => {
-        let ignore = false
-        const checkNewUser = async () => {
-            if (localStorage.getItem(NEW_USER_POPUP_DISMISS_KEY)) return
-            try {
-                await axiosPrivate.get('/v1/models/active-gemini-key/')
-            } catch (error) {
-                if (!ignore && error?.response?.data?.code === 'new_user_no_key') {
-                    setShowNewUserPopup(true)
-                }
-            }
-        }
-        checkNewUser()
-        return () => { ignore = true }
-    }, [])
 
     const handleUpload = (files) => {
         const items = files.map((file) => ({
@@ -111,6 +99,13 @@ export default function Workspace() {
         } catch (error) {
             const { code, detail } = error?.response?.data || {}
             if (code === 'new_user_no_key') {
+                if (localStorage.getItem(NEW_USER_POPUP_DISMISS_KEY)) {
+                    setToast({
+                        message: detail || 'Add your own Gemini API key or upgrade to a plan to continue processing images.',
+                        type: 'error',
+                    })
+                    return
+                }
                 setShowNewUserPopup(true)
                 return
             }
@@ -358,6 +353,13 @@ export default function Workspace() {
                             <p className="text-slate-500 dark:text-slate-400 text-base font-normal">Upload new assets and manage your generation queue.</p>
                         </div>
                     </div>
+                    {workspaceLoading ? (
+                        <div className="flex items-center justify-center py-16">
+                            <Loader2 className="w-6 h-6 animate-spin text-primary/60" />
+                        </div>
+                    ) : !hasWorkspaceAccess ? (
+                        <LockedFeatureCard title="Premium feature" description="The workspace is available to Premium members and to members within their first month. Upgrade your plan to keep processing images." />
+                    ) : (
                     <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
                         <div className="lg:col-span-7 flex flex-col gap-8">
                             <div className="flex flex-col gap-3">
@@ -394,6 +396,7 @@ export default function Workspace() {
                             onSettingsChange={handleSettingsChange}
                         />
                     </div>
+                    )}
                 </main>
             </div>
             {toast && <Toast message={toast.message} type={toast.type} onClose={() => setToast(null)} />}
