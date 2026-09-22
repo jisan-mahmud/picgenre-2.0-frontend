@@ -38,6 +38,8 @@ export default function Workspace() {
     const [toast, setToast] = useState(null)
     const [showNewUserPopup, setShowNewUserPopup] = useState(false)
     const [showCreditsModal, setShowCreditsModal] = useState(false)
+    const [creditsModalHasOwnKey, setCreditsModalHasOwnKey] = useState(false)
+    const ownKeyRef = useRef(null)
     const isStoppedRef = useRef(false)
 
     const getCurrentSubscription = async () => {
@@ -94,14 +96,18 @@ export default function Workspace() {
         setSettings(prev => ({ ...prev, [key]: value }))
     }
 
-    const handleGenerate = async () => {
+    const handleGenerate = async (forceOwnKey = false) => {
         const workItems = queueItems.filter(item => item.status !== 'processing')
         if (workItems.length === 0) return
 
         let activeKey
         try {
             const { data } = await axiosPrivate.get('/v1/models/active-gemini-key/')
-            activeKey = { apiKey: data.api_key, source: data.source }
+            if (forceOwnKey && ownKeyRef.current) {
+                activeKey = { apiKey: ownKeyRef.current, source: 'user' }
+            } else {
+                activeKey = { apiKey: data.api_key, source: data.source }
+            }
         } catch (error) {
             const { code, detail } = error?.response?.data || {}
             if (code === 'new_user_no_key') {
@@ -109,6 +115,7 @@ export default function Workspace() {
                 return
             }
             if (code === 'premium_no_key') {
+                setCreditsModalHasOwnKey(false)
                 setShowCreditsModal(true)
                 return
             }
@@ -124,6 +131,16 @@ export default function Workspace() {
                 type: 'error',
             })
             return
+        }
+
+        if (!forceOwnKey && isPremium && activeKey.source === 'user') {
+            const sub = await getCurrentSubscription().catch(() => null)
+            if (!sub || sub.remaining_credit <= 0) {
+                ownKeyRef.current = activeKey.apiKey
+                setCreditsModalHasOwnKey(true)
+                setShowCreditsModal(true)
+                return
+            }
         }
 
         setIsProcessing(true)
@@ -165,12 +182,12 @@ export default function Workspace() {
                 if (data.source === 'user') {
                     usesAdminCredits = false
                     creditsLeft = Number.MAX_SAFE_INTEGER
-                    setToast({
-                        message: 'Plan credits finished. Continuing with your own Gemini API key.',
-                        type: 'success',
-                    })
-                    return 'continue'
+                    ownKeyRef.current = data.api_key
+                    setCreditsModalHasOwnKey(true)
+                    setShowCreditsModal(true)
+                    return 'stop'
                 }
+                activeKey = { apiKey: data.api_key, source: data.source }
                 try {
                     creditsLeft = (await getCurrentSubscription())?.remaining_credit ?? 0
                 } catch {
@@ -180,6 +197,7 @@ export default function Workspace() {
             } catch (error) {
                 const { code, detail } = error?.response?.data || {}
                 if (code === 'premium_no_key') {
+                    setCreditsModalHasOwnKey(false)
                     setShowCreditsModal(true)
                     return 'stop'
                 }
@@ -288,7 +306,7 @@ export default function Workspace() {
 
     const handleContinueWithOwnKey = () => {
         setShowCreditsModal(false)
-        handleGenerate()
+        handleGenerate(true)
     }
 
     const handleStop = () => {
@@ -382,7 +400,7 @@ export default function Workspace() {
             {showNewUserPopup && <NewUserKeyModal onClose={() => setShowNewUserPopup(false)} />}
             {showCreditsModal && (
                 <CreditsExhaustedModal
-                    hasOwnKey={false}
+                    hasOwnKey={creditsModalHasOwnKey}
                     onContinueWithOwnKey={handleContinueWithOwnKey}
                     onClose={() => setShowCreditsModal(false)}
                 />
