@@ -1,11 +1,11 @@
 import './App.css'
-import { Routes, Route } from "react-router-dom";
+import { Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider } from './contexts/AuthContext';
 import { QueryProvider } from './components/QueryProvider';
 import ProtectedRoute from './components/ProtectedRoute';
 
 import Home from './pages/Home';
-import Workspace from './pages/Workspace';
+import Studio from './pages/Studio';
 import Login from './pages/Login';
 import MainLayouts from './components/layouts/MainLayouts';
 import General from './pages/settings/General';
@@ -18,6 +18,7 @@ import PrivacyPolicy from './pages/PrivacyPolicy';
 import Features from './pages/Features';
 import Feedback from './pages/Feedback';
 import HowItWorks from './pages/HowItWorks';
+import Tools from './pages/Tools';
 import NotFoundPage from './pages/NotFoundPage';
 
 function App() {
@@ -27,9 +28,15 @@ function App() {
         <Routes>
           <Route element={<MainLayouts />}>
             <Route index element={<Home />} />
-            <Route path="/workspace" element={
+            <Route path="/studio" element={
               <ProtectedRoute>
-                <Workspace />
+                <Studio />
+              </ProtectedRoute>
+            } />
+            <Route path="/workspace" element={<Navigate to="/studio" replace />} />
+            <Route path="/tools" element={
+              <ProtectedRoute>
+                <Tools />
               </ProtectedRoute>
             } />
             <Route path="/settings" element={

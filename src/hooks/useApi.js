@@ -110,7 +110,7 @@ export const useSubscriptionPlans = () => {
   });
 };
 
-export const useCurrentSubscription = () => {
+export const useCurrentSubscription = (options = {}) => {
   return useQuery({
     queryKey: ['subscription', 'current'],
     queryFn: async () => {
@@ -118,6 +118,7 @@ export const useCurrentSubscription = () => {
       return response.data;
     },
     staleTime: 1000 * 60 * 5,
+    ...options,
   });
 };
 

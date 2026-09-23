@@ -1,14 +1,26 @@
 import React from 'react'
 import Header from './Header'
 import Footer from './Footer'
-import { Outlet } from 'react-router-dom'
+import { Outlet, useLocation } from 'react-router-dom'
+import { AnimatePresence, motion } from 'motion/react'
 
 export default function MainLayouts() {
+    const location = useLocation()
+
     return (
         <div>
             <Header />
-            {/* Main content would go here */}
-            <Outlet />
+            <AnimatePresence mode="wait">
+                <motion.div
+                    key={location.pathname}
+                    initial={{ opacity: 0, y: 8 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -8 }}
+                    transition={{ duration: 0.35, ease: 'easeOut' }}
+                >
+                    <Outlet />
+                </motion.div>
+            </AnimatePresence>
             <Footer/>
         </div>
     )

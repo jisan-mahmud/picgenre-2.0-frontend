@@ -2,6 +2,7 @@ import React, { useState } from 'react'
 import { useTheme } from '../../hooks/useTheme'
 import { Link } from 'react-router-dom'
 import { Sun, Moon, Rocket, Menu, X, User, LogOut } from 'lucide-react'
+import { AnimatePresence, motion } from 'motion/react'
 import { useAuth } from '../../contexts/AuthContext'
 
 export default function Header() {
@@ -25,6 +26,7 @@ export default function Header() {
                     </div>
                     <nav className="hidden md:flex items-center gap-6 lg:gap-8">
                         <Link to="/features" className="text-sm font-medium hover:text-primary transition-colors">Features</Link>
+                        <Link to="/tools" className="text-sm font-medium hover:text-primary transition-colors">Tools</Link>
                         <Link to="/how-it-works" className="text-sm font-medium hover:text-primary transition-colors" href="#">How It Works</Link>
                         <Link to="/pricing" className="text-sm font-medium hover:text-primary transition-colors">Pricing</Link>
                     </nav>
@@ -34,7 +36,15 @@ export default function Header() {
                             className="p-2 rounded-lg hover:bg-slate-200 dark:hover:bg-slate-800 transition-colors"
                             aria-label="Toggle theme"
                         >
-                            {theme === 'dark' ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
+                            <motion.span
+                                key={theme}
+                                className="block"
+                                initial={{ rotate: -90, opacity: 0, scale: 0.6 }}
+                                animate={{ rotate: 0, opacity: 1, scale: 1 }}
+                                transition={{ duration: 0.35, ease: 'easeOut' }}
+                            >
+                                {theme === 'dark' ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
+                            </motion.span>
                         </button>
                         {isAuthenticated() ? (
                             <div className="relative">
@@ -48,14 +58,28 @@ export default function Header() {
                                         {user?.displayName || user?.email || 'User'}
                                     </span>
                                 </button>
+                                <AnimatePresence>
                                 {isMenuOpen && (
-                                    <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-slate-800 rounded-lg shadow-lg border border-slate-200 dark:border-slate-700 py-1">
+                                    <motion.div
+                                        className="absolute right-0 mt-2 w-48 bg-white dark:bg-slate-800 rounded-lg shadow-lg border border-slate-200 dark:border-slate-700 py-1 origin-top-right"
+                                        initial={{ opacity: 0, y: -8, scale: 0.96 }}
+                                        animate={{ opacity: 1, y: 0, scale: 1 }}
+                                        exit={{ opacity: 0, y: -8, scale: 0.96 }}
+                                        transition={{ duration: 0.18, ease: 'easeOut' }}
+                                    >
                                         <Link
-                                            to="/workspace"
+                                            to="/studio"
                                             className="block px-4 py-2 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700"
                                             onClick={() => setIsMenuOpen(false)}
                                         >
-                                            Workspace
+                                            Studio
+                                        </Link>
+                                        <Link
+                                            to="/tools"
+                                            className="block px-4 py-2 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700"
+                                            onClick={() => setIsMenuOpen(false)}
+                                        >
+                                            Tools
                                         </Link>
                                         <Link
                                             to="/settings"
@@ -71,15 +95,16 @@ export default function Header() {
                                             <LogOut className="w-4 h-4" />
                                             Sign Out
                                         </button>
-                                    </div>
+                                    </motion.div>
                                 )}
+                            </AnimatePresence>
                             </div>
                         ) : (
                             <>
                                 <Link to="/login" className="hidden sm:flex text-sm font-semibold px-3 sm:px-4 py-2 rounded-lg hover:bg-slate-200 dark:hover:bg-slate-800 transition-colors">
                                     Sign In
                                 </Link>
-                                <Link to="/workspace" className="hidden sm:flex bg-primary text-white text-xs sm:text-sm font-bold px-3 sm:px-5 py-2 rounded-lg hover:bg-blue-700 transition-all items-center gap-1 sm:gap-2">
+                                <Link to="/studio" className="hidden sm:flex bg-primary text-white text-xs sm:text-sm font-bold px-3 sm:px-5 py-2 rounded-lg hover:bg-blue-700 transition-all items-center gap-1 sm:gap-2">
                                     <Rocket className="w-4 h-4" />
                                     <span className="hidden sm:inline">Get Started</span>
                                     <span className="sm:hidden">Start</span>
@@ -95,23 +120,33 @@ export default function Header() {
                         )}
                     </div>
                 </div>
+                <AnimatePresence>
                 {isMenuOpen && !isAuthenticated() && (
-                    <div className="md:hidden border-t border-slate-200 dark:border-slate-800 bg-background-light dark:bg-background-dark">
+                    <motion.div
+                        className="md:hidden border-t border-slate-200 dark:border-slate-800 bg-background-light dark:bg-background-dark"
+                        initial={{ opacity: 0, height: 0 }}
+                        animate={{ opacity: 1, height: 'auto' }}
+                        exit={{ opacity: 0, height: 0 }}
+                        transition={{ duration: 0.25, ease: 'easeInOut' }}
+                        style={{ overflow: 'hidden' }}
+                    >
                         <nav className="px-4 py-4 space-y-3">
                             <Link to="/features" className="block text-sm font-medium hover:text-primary transition-colors py-2">Features</Link>
+                            <Link to="/tools" className="block text-sm font-medium hover:text-primary transition-colors py-2">Tools</Link>
                             <Link to="/how-it-works" className="block text-sm font-medium hover:text-primary transition-colors py-2" href="#">How It Works</Link>
                             <Link to="/pricing" className="block text-sm font-medium hover:text-primary transition-colors py-2">Pricing</Link>
                             <div className="pt-3 border-t border-slate-200 dark:border-slate-800 space-y-3">
                                 <Link to="/login" className="block text-sm font-semibold py-2 hover:text-primary transition-colors">
                                     Sign In
                                 </Link>
-                                <Link to="/workspace" className="block bg-primary text-white text-sm font-bold px-4 py-3 rounded-lg hover:bg-blue-700 transition-all text-center">
+                                <Link to="/studio" className="block bg-primary text-white text-sm font-bold px-4 py-3 rounded-lg hover:bg-blue-700 transition-all text-center">
                                     Get Started
                                 </Link>
                             </div>
                         </nav>
-                    </div>
+                    </motion.div>
                 )}
+            </AnimatePresence>
         </header>
     )
 }

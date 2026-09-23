@@ -1,10 +1,17 @@
 import { axiosPrivate } from '../api_call/axiosInstance'
 
-const CONVERSION_ENDPOINT = '/v1/convert/eps-to-jpg/'
+const ENDPOINTS = {
+  jpg: { url: '/v1/convert/eps-to-jpg/', mime: 'image/jpeg' },
+  png: { url: '/v1/convert/eps-to-png/', mime: 'image/png' },
+}
+
 const MAX_RETRIES = 1
 const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms))
 
-export async function convertEpsToJpg(file, maxRetries = MAX_RETRIES) {
+export async function convertEpsToImage(file, target = 'jpg', maxRetries = MAX_RETRIES) {
+  const { url, mime } = ENDPOINTS[target]
+  if (!url) throw new Error(`Unsupported EPS target format: ${target}`)
+
   let lastError = null
 
   for (let attempt = 0; attempt <= maxRetries; attempt++) {
@@ -14,14 +21,15 @@ export async function convertEpsToJpg(file, maxRetries = MAX_RETRIES) {
       const formData = new FormData()
       formData.append('file', file)
 
-      const response = await axiosPrivate.post(CONVERSION_ENDPOINT, formData, {
+      const response = await axiosPrivate.post(url, formData, {
         headers: { 'Content-Type': 'multipart/form-data' },
         responseType: 'blob',
       })
 
-      const blob = new Blob([response.data], { type: 'image/jpeg' })
-      const jpgName = file.name.replace(/\.eps$/i, '.jpg')
-      return new File([blob], jpgName, { type: 'image/jpeg' })
+      const blob = new Blob([response.data], { type: mime })
+      const ext = target === 'png' ? 'png' : 'jpg'
+      const outName = file.name.replace(/\.eps$/i, `.${ext}`)
+      return new File([blob], outName, { type: mime })
     } catch (error) {
       const status = error?.response?.status
       let message = 'EPS conversion failed'
@@ -45,3 +53,5 @@ export async function convertEpsToJpg(file, maxRetries = MAX_RETRIES) {
 
   throw lastError
 }
+
+export const convertEpsToJpg = (file, maxRetries) => convertEpsToImage(file, 'jpg', maxRetries)

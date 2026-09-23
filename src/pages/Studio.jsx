@@ -1,0 +1,426 @@
+import React, { useRef, useState } from 'react'
+import { useQueryClient } from '@tanstack/react-query'
+import { CloudUpload, Loader2 } from 'lucide-react'
+import { motion } from 'motion/react'
+import { axiosPrivate } from '../api_call/axiosInstance'
+import UploadAssets from '../components/studio/UploadAssets'
+import FileQueue from '../components/studio/FileQueue'
+import ProcessedFile from '../components/studio/ProcessedFile'
+import SideBar from '../components/studio/SideBar'
+import Toast from '../components/ui/Toast'
+import NewUserKeyModal, { NEW_USER_POPUP_DISMISS_KEY } from '../components/studio/NewUserKeyModal'
+import CreditsExhaustedModal from '../components/studio/CreditsExhaustedModal'
+import LockedFeatureCard from '../components/LockedFeatureCard'
+import { analyzeImage, DEFAULT_PLATFORM, PLATFORMS } from '../utils/geminiService'
+import { convertEpsToJpg } from '../utils/convertEps'
+import { generateCSV, downloadCSV } from '../utils/csvExport'
+import { useCurrentSubscription } from '../hooks/useApi'
+
+const makePreview = (file) => {
+    const ext = file.name.split('.').pop().toLowerCase()
+    if (['jpg', 'jpeg', 'png'].includes(ext)) {
+        return URL.createObjectURL(file)
+    }
+    return null
+}
+
+let idCounter = 0
+const nextId = () => `file-${Date.now()}-${idCounter++}`
+
+export default function Studio() {
+    const queryClient = useQueryClient()
+    const { data: subscription } = useCurrentSubscription()
+    const isPremium = subscription?.plan?.tier === 'BASIC' || subscription?.plan?.tier === 'PRO'
+    const isNewUser = subscription?.is_new_user === true
+    const hasStudioAccess = subscription && (isPremium || isNewUser)
+    const studioLoading = subscription === undefined
+    const [queueItems, setQueueItems] = useState([])
+    const [processedFiles, setProcessedFiles] = useState([])
+    const [platform, setPlatform] = useState(DEFAULT_PLATFORM)
+    const [customPrompt, setCustomPrompt] = useState('')
+    const [settings, setSettings] = useState({ ...PLATFORMS[DEFAULT_PLATFORM] })
+    const [isProcessing, setIsProcessing] = useState(false)
+    const [toast, setToast] = useState(null)
+    const [showNewUserPopup, setShowNewUserPopup] = useState(false)
+    const [showCreditsModal, setShowCreditsModal] = useState(false)
+    const [creditsModalHasOwnKey, setCreditsModalHasOwnKey] = useState(false)
+    const ownKeyRef = useRef(null)
+    const isStoppedRef = useRef(false)
+
+    const getCurrentSubscription = async () => {
+        queryClient.invalidateQueries({ queryKey: ['subscription', 'current'] })
+        return queryClient.fetchQuery({
+            queryKey: ['subscription', 'current'],
+            queryFn: async () => (await axiosPrivate.get('/v1/subscription/current/')).data,
+        })
+    }
+
+    const handleUpload = (files) => {
+        const items = files.map((file) => ({
+            id: nextId(),
+            file,
+            status: 'pending',
+            preview: makePreview(file),
+            error: null,
+        }))
+        setQueueItems(prev => [...prev, ...items])
+    }
+
+    const handleRemove = (id) => {
+        const removed = queueItems.find(item => item.id === id)
+        if (removed?.preview) URL.revokeObjectURL(removed.preview)
+        setQueueItems(prev => prev.filter(item => item.id !== id))
+    }
+
+    const setStatus = (id, status, error = null) => {
+        setQueueItems(prev => prev.map(item => item.id === id ? { ...item, status, error } : item))
+    }
+
+    const handlePlatformChange = (name) => {
+        setPlatform(name)
+        setSettings({ ...PLATFORMS[name] })
+    }
+
+    const handleSettingsChange = (key, value) => {
+        setSettings(prev => ({ ...prev, [key]: value }))
+    }
+
+    const handleResetSettings = () => {
+        setSettings({ ...PLATFORMS[platform] })
+        setToast({ message: 'Metadata settings reset to defaults', type: 'success' })
+    }
+
+    const handleGenerate = async (forceOwnKey = false) => {
+        const workItems = queueItems.filter(item => item.status !== 'processing')
+        if (workItems.length === 0) return
+
+        let activeKey
+        try {
+            const { data } = await axiosPrivate.get('/v1/models/active-gemini-key/')
+            if (forceOwnKey && ownKeyRef.current) {
+                activeKey = { apiKey: ownKeyRef.current, source: 'user' }
+            } else {
+                activeKey = { apiKey: data.api_key, source: data.source }
+            }
+        } catch (error) {
+            const { code, detail } = error?.response?.data || {}
+            if (code === 'new_user_no_key') {
+                if (localStorage.getItem(NEW_USER_POPUP_DISMISS_KEY)) {
+                    setToast({
+                        message: detail || 'Add your own Gemini API key or upgrade to a plan to continue processing images.',
+                        type: 'error',
+                    })
+                    return
+                }
+                setShowNewUserPopup(true)
+                return
+            }
+            if (code === 'premium_no_key') {
+                setCreditsModalHasOwnKey(false)
+                setShowCreditsModal(true)
+                return
+            }
+            if (code === 'free_trial_ended') {
+                setToast({
+                    message: detail || 'Your free trial period has ended. Upgrade to a plan to continue processing images.',
+                    type: 'error',
+                })
+                return
+            }
+            setToast({
+                message: detail || 'Unable to get a Gemini API key.',
+                type: 'error',
+            })
+            return
+        }
+
+        if (!forceOwnKey && isPremium && activeKey.source === 'user') {
+            const sub = await getCurrentSubscription().catch(() => null)
+            if (!sub || sub.remaining_credit <= 0) {
+                ownKeyRef.current = activeKey.apiKey
+                setCreditsModalHasOwnKey(true)
+                setShowCreditsModal(true)
+                return
+            }
+        }
+
+        setIsProcessing(true)
+        isStoppedRef.current = false
+
+        let failedCount = 0
+        let firstError = null
+        let stoppedForCredits = false
+
+        let usesAdminCredits = activeKey.source === 'admin'
+        let creditsLeft = Number.MAX_SAFE_INTEGER
+        let inFlight = 0
+
+        if (usesAdminCredits) {
+            try {
+                creditsLeft = (await getCurrentSubscription())?.remaining_credit ?? 0
+            } catch {
+                creditsLeft = 0
+            }
+        }
+
+        const consumeCredit = async () => {
+            if (!usesAdminCredits) return true
+            try {
+                const { data } = await axiosPrivate.post('/v1/subscription/consume/', { count: 1 })
+                creditsLeft = data.remaining_credit
+                queryClient.invalidateQueries({ queryKey: ['subscription', 'current'] })
+                return true
+            } catch (error) {
+                console.error('Failed to consume credits:', error)
+                return false
+            }
+        }
+
+        const handleCreditsExhausted = async () => {
+            try {
+                const { data } = await axiosPrivate.get('/v1/models/active-gemini-key/')
+                activeKey = { apiKey: data.api_key, source: data.source }
+                if (data.source === 'user') {
+                    usesAdminCredits = false
+                    creditsLeft = Number.MAX_SAFE_INTEGER
+                    ownKeyRef.current = data.api_key
+                    setCreditsModalHasOwnKey(true)
+                    setShowCreditsModal(true)
+                    return 'stop'
+                }
+                activeKey = { apiKey: data.api_key, source: data.source }
+                try {
+                    creditsLeft = (await getCurrentSubscription())?.remaining_credit ?? 0
+                } catch {
+                    creditsLeft = 0
+                }
+                return 'continue'
+            } catch (error) {
+                const { code, detail } = error?.response?.data || {}
+                if (code === 'premium_no_key') {
+                    setCreditsModalHasOwnKey(false)
+                    setShowCreditsModal(true)
+                    return 'stop'
+                }
+                if (code === 'free_trial_ended') {
+                    setToast({
+                        message: detail || 'Your free trial period has ended. Upgrade to a plan to continue processing images.',
+                        type: 'error',
+                    })
+                    return 'stop'
+                }
+                setToast({
+                    message: detail || 'Unable to get a Gemini API key.',
+                    type: 'error',
+                })
+                return 'stop'
+            }
+        }
+
+        const processItem = async (item) => {
+            if (isStoppedRef.current) return
+            setStatus(item.id, 'processing')
+
+            try {
+                let fileToAnalyze = item.file
+                if (item.file.name.toLowerCase().endsWith('.eps')) {
+                    fileToAnalyze = await convertEpsToJpg(item.file)
+                }
+
+                const result = await analyzeImage(fileToAnalyze, platform, customPrompt, activeKey.apiKey, settings, activeKey.source)
+                setProcessedFiles(prev => [...prev, {
+                    ...result,
+                    name: item.file.name,
+                    preview: item.preview,
+                    platform,
+                }])
+                setQueueItems(prev => prev.filter(i => i.id !== item.id))
+
+                const ok = await consumeCredit()
+                if (!ok) {
+                    const outcome = await handleCreditsExhausted()
+                    if (outcome !== 'continue') {
+                        stoppedForCredits = true
+                        isStoppedRef.current = true
+                    }
+                }
+            } catch (error) {
+                failedCount++
+                if (!firstError) firstError = error?.message || 'Unknown error'
+                console.error(`Failed to process ${item.file.name}:`, error)
+                setStatus(item.id, 'failed', firstError)
+            }
+        }
+
+        try {
+            const CONCURRENCY = 3
+            let nextIndex = 0
+
+            const worker = async () => {
+                while (!isStoppedRef.current) {
+                    if (usesAdminCredits) {
+                        if (inFlight >= creditsLeft) {
+                            if (creditsLeft <= 0) {
+                                const outcome = await handleCreditsExhausted()
+                                if (outcome !== 'continue') {
+                                    stoppedForCredits = true
+                                    isStoppedRef.current = true
+                                }
+                                return
+                            }
+                            await new Promise(resolve => setTimeout(resolve, 60))
+                            continue
+                        }
+                    }
+                    const idx = nextIndex++
+                    if (idx >= workItems.length) return
+                    inFlight++
+                    try {
+                        await processItem(workItems[idx])
+                    } finally {
+                        inFlight--
+                    }
+                }
+            }
+
+            await Promise.all(
+                Array.from({ length: Math.min(CONCURRENCY, workItems.length) }, worker)
+            )
+        } finally {
+            setIsProcessing(false)
+        }
+
+        if (!stoppedForCredits) {
+            if (failedCount > 0) {
+                const detail = firstError || 'Unknown error'
+                setToast({
+                    message: failedCount === 1
+                        ? `${detail} Click Generate to retry.`
+                        : `${failedCount} files failed. ${detail} Click Generate to retry.`,
+                    type: 'error',
+                })
+            } else {
+                setToast({ message: 'All files processed successfully', type: 'success' })
+            }
+        }
+    }
+
+    const handleContinueWithOwnKey = () => {
+        setShowCreditsModal(false)
+        handleGenerate(true)
+    }
+
+    const handleStop = () => {
+        isStoppedRef.current = true
+    }
+
+    const handleExportAll = () => {
+        if (processedFiles.length === 0) {
+            setToast({ message: 'No processed metadata to export', type: 'error' })
+            return
+        }
+        const csv = generateCSV(processedFiles)
+        const date = new Date().toISOString().slice(0, 10)
+        downloadCSV(csv, `picgenre-metadata-${date}.csv`)
+        setToast({ message: `Exported ${processedFiles.length} files to CSV`, type: 'success' })
+    }
+
+    const handleSaveHistory = async () => {
+        if (processedFiles.length === 0) {
+            setToast({ message: 'No processed metadata to save', type: 'error' })
+            return
+        }
+        try {
+            const csv = generateCSV(processedFiles)
+            const formData = new FormData()
+            formData.append('file', new Blob([csv], { type: 'text/csv' }), `picgenre-metadata-${new Date().toISOString().slice(0, 10)}.csv`)
+            formData.append('file_count', String(processedFiles.length))
+            await axiosPrivate.post('/v1/history/create/', formData, {
+                headers: { 'Content-Type': 'multipart/form-data' },
+            })
+            queryClient.invalidateQueries({ queryKey: ['history'] })
+            setToast({ message: `Saved ${processedFiles.length} files to history`, type: 'success' })
+        } catch (error) {
+            if (error?.response?.status === 403) {
+                setToast({ message: 'Save to history is a premium feature. Upgrade your plan to continue.', type: 'error' })
+                return
+            }
+            setToast({ message: 'Failed to save CSV to history. Please try again.', type: 'error' })
+        }
+    }
+
+    return (
+        <div>
+            <div className="layout-container flex h-full grow flex-col">
+                <main className="flex-1 max-w-7xl mx-auto w-full px-4 lg:px-10 py-8">
+                    <motion.div
+                        className="flex flex-wrap justify-between gap-3 mb-8"
+                        initial={{ opacity: 0, y: 12 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.5, ease: 'easeOut' }}
+                    >
+                        <div className="flex flex-col gap-1">
+                            <h1 className="text-slate-900 dark:text-white text-4xl font-black leading-tight tracking-[-0.033em] font-display">Studio</h1>
+                        <p className="text-slate-500 dark:text-slate-400 text-base font-normal">Upload images, generate metadata, and organize your batch — all in one place.</p>
+                        </div>
+                    </motion.div>
+                    {studioLoading ? (
+                        <div className="flex items-center justify-center py-16">
+                            <Loader2 className="w-6 h-6 animate-spin text-primary/60" />
+                        </div>
+                    ) : !hasStudioAccess ? (
+                        <LockedFeatureCard title="Premium feature" description="The studio is available to Premium members and to members within their first month. Upgrade your plan to keep processing images." />
+                    ) : (
+                    <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+                        <div className="lg:col-span-7 flex flex-col gap-8">
+                            <div className="flex flex-col gap-3">
+                                <div className="flex items-center gap-2 mb-1">
+                                    <span className="w-6 h-6 rounded-lg bg-primary/10 text-primary flex items-center justify-center text-[11px] font-black font-display shrink-0">1</span>
+                                    <CloudUpload className="w-5 h-5 text-primary" />
+                                    <h3 className="text-slate-900 dark:text-white text-lg font-bold font-display">Add files</h3>
+                                </div>
+                                <UploadAssets onUpload={handleUpload}/>
+                            </div>
+                            <FileQueue
+                                items={queueItems}
+                                onRemove={handleRemove}
+                                isProcessing={isProcessing}
+                            />
+                            <ProcessedFile
+                                files={processedFiles}
+                                onExportAll={handleExportAll}
+                                onSaveHistory={handleSaveHistory}
+                                canSaveHistory={isPremium}
+                            />
+                        </div>
+                        <SideBar
+                            queueCount={queueItems.length}
+                            processedCount={processedFiles.length}
+                            totalCount={queueItems.length + processedFiles.length}
+                            onGenerate={handleGenerate}
+                            onStop={handleStop}
+                            isProcessing={isProcessing}
+                            platform={platform}
+                            customPrompt={customPrompt}
+                            settings={settings}
+                            onPlatformChange={handlePlatformChange}
+                            onCustomPromptChange={setCustomPrompt}
+                            onSettingsChange={handleSettingsChange}
+                            onReset={handleResetSettings}
+                        />
+                    </div>
+                    )}
+                </main>
+            </div>
+            {toast && <Toast message={toast.message} type={toast.type} onClose={() => setToast(null)} />}
+            {showNewUserPopup && <NewUserKeyModal onClose={() => setShowNewUserPopup(false)} />}
+            {showCreditsModal && (
+                <CreditsExhaustedModal
+                    hasOwnKey={creditsModalHasOwnKey}
+                    onContinueWithOwnKey={handleContinueWithOwnKey}
+                    onClose={() => setShowCreditsModal(false)}
+                />
+            )}
+        </div>
+    )
+}

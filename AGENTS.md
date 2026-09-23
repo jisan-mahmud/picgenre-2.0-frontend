@@ -14,8 +14,8 @@ React Compiler enabled via `babel-plugin-react-compiler`.
 ## Architecture
 - **API base URL**: `VITE_API_BASE_URL` (defaults to `http://localhost:8007/api`)
 - **Auth**: Firebase Google sign-in, JWT in localStorage, axios interceptors handle refresh
-- **Routes**: `/`, `/workspace`, `/settings/*`, `/pricing`, `/features`, `/privacy-policy`, `/login`
-- **Protected routes**: `/workspace` and `/settings/*` via `<ProtectedRoute>`
+- **Routes**: `/`, `/studio`, `/settings/*`, `/pricing`, `/features`, `/privacy-policy`, `/login`
+- **Protected routes**: `/studio` and `/settings/*` via `<ProtectedRoute>`
 - **Deployed on Vercel** (SPA rewrites in `vercel.json`)
 
 ## Key files
@@ -27,6 +27,6 @@ React Compiler enabled via `babel-plugin-react-compiler`.
 ## Gotchas
 - Tailwind CSS 4 uses `@tailwindcss/vite` plugin (not PostCSS-based)
 - `tailwind.config.js` exists but may be redundant with Tailwind v4 CSS-first config
-- ESLint: ignores `dist/`, allows unused vars matching `^[A-Z_]`
+- ESLint: ignores `dist/`, allows unused vars matching `^(motion|[A-Z_])` (`motion` must be allowed because ESLint's `no-unused-vars` wrongly sees `<motion.div>` JSX as unused)
 - Token refresh on 401 redirects to `/login` on failure — don't swallow 401 errors
 - No backend tests/lint/typecheck exist — only `npm run lint` for frontend

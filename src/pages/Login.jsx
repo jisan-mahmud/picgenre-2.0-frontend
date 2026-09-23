@@ -4,6 +4,10 @@ import { Link, useNavigate } from 'react-router-dom';
 import { loginWithGoogle } from '../services/authService';
 import { useAuth } from '../contexts/AuthContext';
 import { ArrowLeft } from 'lucide-react';
+import { motion } from 'motion/react';
+
+const hidden = { opacity: 0, y: 20 }
+const shown = { opacity: 1, y: 0 }
 
 export default function Login() {
     const { theme, toggleTheme } = useTheme();
@@ -18,7 +22,7 @@ export default function Login() {
             setErrorMessage(null);
             const tokens = await loginWithGoogle();
             login(tokens);
-            navigate('/workspace');
+            navigate('/studio');
         } catch (error) {
             console.error('Login failed:', error);
 
@@ -37,29 +41,58 @@ export default function Login() {
         <div className='min-h-screen bg-background-light dark:bg-background-dark grid lg:grid-cols-2'>
             {/* Left brand panel */}
             <aside className="hidden lg:flex flex-col relative overflow-hidden bg-white dark:bg-slate-900/40">
-                <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[600px] h-[360px] bg-primary/10 blur-[120px] rounded-full" />
-                <div className="absolute bottom-0 left-0 w-[400px] h-[300px] bg-primary/5 blur-[100px] rounded-full" />
+                <motion.div
+                    className="absolute top-0 left-1/2 -translate-x-1/2 w-[600px] h-[360px] bg-primary/10 blur-[120px] rounded-full"
+                    animate={{ y: [0, -20, 0] }}
+                    transition={{ duration: 8, repeat: Infinity, ease: 'easeInOut' }}
+                />
+                <motion.div
+                    className="absolute bottom-0 left-0 w-[400px] h-[300px] bg-primary/5 blur-[100px] rounded-full"
+                    animate={{ y: [0, 16, 0], x: [0, 12, 0] }}
+                    transition={{ duration: 10, repeat: Infinity, ease: 'easeInOut' }}
+                />
 
                 <div className="relative flex flex-col justify-between h-full px-14 pt-12 pb-10">
-                    <div className="flex items-center gap-3">
+                    <motion.div
+                        className="flex items-center gap-3"
+                        initial={hidden}
+                        animate={shown}
+                        transition={{ duration: 0.6, ease: 'easeOut' }}
+                    >
                         <div className="size-9 flex items-center justify-center">
                             <img src="/icon.png" alt="Picgenre Logo" className="w-9 h-9 object-contain" />
                         </div>
                         <span className="text-2xl font-black tracking-tight">Picgenre</span>
-                    </div>
+                    </motion.div>
 
                     <div className="flex flex-col gap-6 max-w-xl">
-                        <h1 className="text-5xl xl:text-6xl font-black leading-tight tracking-tight">
+                        <motion.h1
+                            className="text-5xl xl:text-6xl font-black leading-tight tracking-tight"
+                            initial={hidden}
+                            animate={shown}
+                            transition={{ duration: 0.6, delay: 0.1, ease: 'easeOut' }}
+                        >
                             Generate Perfect Metadata from Any File — <span className="text-primary">Instantly</span>
-                        </h1>
-                        <p className="text-lg text-slate-600 dark:text-slate-400 leading-relaxed">
+                        </motion.h1>
+                        <motion.p
+                            className="text-lg text-slate-600 dark:text-slate-400 leading-relaxed"
+                            initial={hidden}
+                            animate={shown}
+                            transition={{ duration: 0.6, delay: 0.2, ease: 'easeOut' }}
+                        >
                             AI search-engine-optimized titles, tags, and descriptions in seconds.
-                        </p>
+                        </motion.p>
                     </div>
 
-                    <Link to="/" className="inline-flex items-center gap-2 text-sm font-semibold text-slate-500 dark:text-slate-400 hover:text-primary transition-colors w-fit">
-                        <ArrowLeft className="w-4 h-4" /> Back to home
-                    </Link>
+                    <motion.div
+                        initial={hidden}
+                        animate={shown}
+                        transition={{ duration: 0.6, delay: 0.3, ease: 'easeOut' }}
+                    >
+                        <Link to="/" className="inline-flex items-center gap-2 text-sm font-semibold text-slate-500 dark:text-slate-400 hover:text-primary transition-colors w-fit">
+                            <ArrowLeft className="w-4 h-4" /> Back to home
+                        </Link>
+                    </motion.div>
                 </div>
             </aside>
 
@@ -99,11 +132,16 @@ export default function Login() {
                                 Sign in to generate perfect metadata with AI
                             </p>
                             {errorMessage && (
-                                <div className="w-full mb-6 p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
+                                <motion.div
+                                    className="w-full mb-6 p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg"
+                                    initial={{ opacity: 0, y: -8, scale: 0.98 }}
+                                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                                    transition={{ duration: 0.25 }}
+                                >
                                     <p className="text-red-700 dark:text-red-200 text-sm font-medium text-center">
                                         {errorMessage}
                                     </p>
-                                </div>
+                                </motion.div>
                             )}
                             <div className="w-full flex justify-center py-2">
                                 <button onClick={handleGoogleLogin} disabled={loading} className="w-full flex cursor-pointer items-center justify-center overflow-hidden rounded-lg h-14 px-6 bg-slate-900 dark:bg-slate-100 text-white dark:text-slate-900 hover:bg-slate-800 dark:hover:bg-slate-200 transition-all duration-200 gap-3 text-base font-bold leading-normal tracking-tight shadow-lg disabled:opacity-50 disabled:cursor-not-allowed">

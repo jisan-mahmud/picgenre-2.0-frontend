@@ -1,7 +1,9 @@
 import React, { useState } from 'react'
 import { Coins, Loader2, CheckCircle2, X } from 'lucide-react'
+import { AnimatePresence, motion } from 'motion/react'
 import { useSubscriptionPlans, useSubscribe } from '../hooks/useApi'
 import { useAuth } from '../contexts/AuthContext'
+import Reveal from '../components/ui/Reveal'
 
 const faqs = [
     {
@@ -95,18 +97,46 @@ function CheckoutModal({ plan, isYearly, onClose, onSuccess }) {
 
     if (isPending) {
         return (
-            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50" onClick={onClose}>
-                <div className="bg-white dark:bg-slate-900 rounded-2xl p-10 shadow-2xl flex flex-col items-center gap-4 max-w-md w-full mx-4" onClick={(e) => e.stopPropagation()}>
+            <motion.div
+                className="fixed inset-0 z-50 flex items-center justify-center bg-black/50"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.2 }}
+                onClick={onClose}
+            >
+                <motion.div
+                    className="bg-white dark:bg-slate-900 rounded-2xl p-10 shadow-2xl flex flex-col items-center gap-4 max-w-md w-full mx-4"
+                    initial={{ opacity: 0, scale: 0.95 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0, scale: 0.95 }}
+                    transition={{ duration: 0.2 }}
+                    onClick={(e) => e.stopPropagation()}
+                >
                     <Loader2 className="w-10 h-10 text-primary animate-spin" />
                     <p className="text-slate-600 dark:text-slate-400 font-medium">Processing payment…</p>
-                </div>
-            </div>
+                </motion.div>
+            </motion.div>
         )
     }
 
     return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50" onClick={onClose}>
-            <div className="bg-white dark:bg-slate-900 rounded-2xl p-8 shadow-2xl max-w-md w-full mx-4 relative" onClick={(e) => e.stopPropagation()}>
+        <motion.div
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/50"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.2 }}
+            onClick={onClose}
+        >
+            <motion.div
+                className="bg-white dark:bg-slate-900 rounded-2xl p-8 shadow-2xl max-w-md w-full mx-4 relative"
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.95 }}
+                transition={{ duration: 0.2 }}
+                onClick={(e) => e.stopPropagation()}
+            >
                 <button onClick={onClose} className="absolute top-4 right-4 text-slate-400 hover:text-slate-700 dark:hover:text-white transition-colors">
                     <X size={20} />
                 </button>
@@ -191,15 +221,29 @@ function CheckoutModal({ plan, isYearly, onClose, onSuccess }) {
                         </div>
                     </>
                 )}
-            </div>
-        </div>
+            </motion.div>
+        </motion.div>
     )
 }
 
 function PaymentSuccessModal({ onClose }) {
     return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50" onClick={onClose}>
-            <div className="bg-white dark:bg-slate-900 rounded-2xl p-8 shadow-2xl max-w-md w-full mx-4 flex flex-col items-center gap-4 text-center" onClick={(e) => e.stopPropagation()}>
+        <motion.div
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/50"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.2 }}
+            onClick={onClose}
+        >
+            <motion.div
+                className="bg-white dark:bg-slate-900 rounded-2xl p-8 shadow-2xl max-w-md w-full mx-4 flex flex-col items-center gap-4 text-center"
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.95 }}
+                transition={{ duration: 0.2 }}
+                onClick={(e) => e.stopPropagation()}
+            >
                 <CheckCircle2 className="w-16 h-16 text-primary" />
                 <h3 className="text-xl font-bold text-slate-900 dark:text-white">Payment Submitted</h3>
                 <p className="text-sm text-slate-600 dark:text-slate-400">
@@ -208,8 +252,8 @@ function PaymentSuccessModal({ onClose }) {
                 <button onClick={onClose} className="mt-2 w-full py-3 rounded-xl bg-primary text-white font-bold hover:bg-indigo-500 shadow-lg shadow-primary/20 transition-all">
                     Done
                 </button>
-            </div>
-        </div>
+            </motion.div>
+        </motion.div>
     )
 }
 
@@ -264,13 +308,18 @@ export default function Pricing() {
         <div className="bg-background-light dark:bg-background-dark text-slate-900 dark:text-white">
             <section className="pt-20 pb-16 px-6">
                 <div className="max-w-4xl mx-auto text-center">
-                    <h1 className="text-4xl md:text-6xl font-black leading-tight tracking-tight mb-6 text-slate-900 dark:text-white">
-                        Simple, Transparent <span className="text-primary">Pricing</span>
-                    </h1>
-                    <p className="text-lg md:text-xl text-slate-600 dark:text-slate-400 max-w-2xl mx-auto leading-relaxed">
-                        Choose the perfect plan for your creative workflow. Scale as you grow with Picgenre's powerful AI infrastructure.
-                    </p>
-                    <div className="mt-8 inline-flex items-center gap-3 bg-slate-100 dark:bg-slate-800 p-1 rounded-full">
+                    <Reveal>
+                        <h1 className="text-4xl md:text-6xl font-black leading-tight tracking-tight mb-6 text-slate-900 dark:text-white">
+                            Simple, Transparent <span className="text-primary">Pricing</span>
+                        </h1>
+                    </Reveal>
+                    <Reveal delay={100}>
+                        <p className="text-lg md:text-xl text-slate-600 dark:text-slate-400 max-w-2xl mx-auto leading-relaxed">
+                            Choose the perfect plan for your creative workflow. Scale as you grow with Picgenre's powerful AI infrastructure.
+                        </p>
+                    </Reveal>
+                    <Reveal delay={200}>
+                        <div className="mt-8 inline-flex items-center gap-3 bg-slate-100 dark:bg-slate-800 p-1 rounded-full">
                         <button
                             onClick={() => setYearly(false)}
                             className={`px-5 py-2 rounded-full text-sm font-bold transition-all ${
@@ -288,6 +337,7 @@ export default function Pricing() {
                             )}
                         </button>
                     </div>
+                    </Reveal>
                 </div>
             </section>
             <section className="py-12 px-6">
@@ -309,8 +359,9 @@ export default function Pricing() {
                     </div>
                 ) : (
                 <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-8">
-                    {plans.map((plan) => (
-                        <div key={plan.name} className={`flex flex-col p-8 rounded-2xl bg-white dark:bg-slate-900/40 relative transition-all ${
+                    {plans.map((plan, i) => (
+                        <Reveal key={plan.name} delay={i * 100}>
+                        <div className={`flex flex-col p-8 rounded-2xl bg-white dark:bg-slate-900/40 relative transition-all h-full ${
                             plan.featured
                                 ? 'border-2 border-primary shadow-2xl shadow-primary/10'
                                 : 'border border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-900'
@@ -386,35 +437,44 @@ export default function Pricing() {
                             </button>
                             )}
                         </div>
+                        </Reveal>
                     ))}
                 </div>
                 )}
             </section>
             <section className="py-24 px-6 border-t border-slate-200 dark:border-white/5">
                 <div className="max-w-3xl mx-auto">
-                    <h2 className="text-3xl font-black mb-12 text-center text-slate-900 dark:text-white">Frequently Asked Questions</h2>
+                    <Reveal>
+                        <h2 className="text-3xl font-black mb-12 text-center text-slate-900 dark:text-white">Frequently Asked Questions</h2>
+                    </Reveal>
                     <div className="space-y-6">
-                        {faqs.map((faq) => (
-                            <div key={faq.q} className="p-6 rounded-xl bg-slate-50 dark:bg-slate-900/40 border border-slate-200 dark:border-slate-800">
-                                <h4 className="font-bold mb-2 text-slate-900 dark:text-white">{faq.q}</h4>
-                                <p className="text-slate-600 dark:text-slate-400 text-sm leading-relaxed">{faq.a}</p>
-                            </div>
+                        {faqs.map((faq, i) => (
+                            <Reveal key={faq.q} delay={i * 80}>
+                                <div className="p-6 rounded-xl bg-slate-50 dark:bg-slate-900/40 border border-slate-200 dark:border-slate-800">
+                                    <h4 className="font-bold mb-2 text-slate-900 dark:text-white">{faq.q}</h4>
+                                    <p className="text-slate-600 dark:text-slate-400 text-sm leading-relaxed">{faq.a}</p>
+                                </div>
+                            </Reveal>
                         ))}
                     </div>
                 </div>
             </section>
 
-            {checkout && (
-                <CheckoutModal
-                    plan={checkout}
-                    isYearly={yearly}
-                    onClose={handleCloseCheckout}
-                    onSuccess={() => { setSubmitted(true); setCheckout(null) }}
-                />
-            )}
-            {submitted && (
-                <PaymentSuccessModal onClose={handleSuccessClose} />
-            )}
+            <AnimatePresence>
+                {checkout && (
+                    <CheckoutModal
+                        plan={checkout}
+                        isYearly={yearly}
+                        onClose={handleCloseCheckout}
+                        onSuccess={() => { setSubmitted(true); setCheckout(null) }}
+                    />
+                )}
+            </AnimatePresence>
+            <AnimatePresence>
+                {submitted && (
+                    <PaymentSuccessModal onClose={handleSuccessClose} />
+                )}
+            </AnimatePresence>
         </div>
     )
 }
