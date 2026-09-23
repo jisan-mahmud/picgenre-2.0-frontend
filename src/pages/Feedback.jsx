@@ -1,25 +1,9 @@
 import React, { useState } from 'react'
 import { Star, Send, CheckCircle, Loader2 } from 'lucide-react'
-import { useInView } from '../hooks/useInView'
+import { motion } from 'motion/react'
+import Reveal from '../components/ui/Reveal'
 import { useCreateFeedback } from '../hooks/useApi'
 import Toast from '../components/ui/Toast'
-
-function AnimatedSection({ children, className = '', delay = 0 }) {
-    const [ref, isInView] = useInView()
-    return (
-        <div
-            ref={ref}
-            className={className}
-            style={{
-                opacity: isInView ? 1 : 0,
-                transform: isInView ? 'translateY(0)' : 'translateY(24px)',
-                transition: `opacity 0.6s ease-out ${delay}ms, transform 0.6s ease-out ${delay}ms`,
-            }}
-        >
-            {children}
-        </div>
-    )
-}
 
 const CONTRIBUTOR_OPTIONS = ['Adobe Stock', 'Freepik', 'Shutterstock']
 
@@ -66,19 +50,19 @@ export default function Feedback() {
                     >
                         <CheckCircle className="w-8 h-8 text-primary" />
                     </div>
-                    <AnimatedSection delay={100}>
+                    <Reveal delay={100}>
                         <h2 className="text-2xl font-black text-slate-900 dark:text-white">Thank You!</h2>
-                    </AnimatedSection>
-                    <AnimatedSection delay={200}>
+                    </Reveal>
+                    <Reveal delay={200}>
                         <p className="text-slate-600 dark:text-slate-400 leading-relaxed">
                             Your feedback helps us improve Picgenre for contributors everywhere.
                         </p>
-                    </AnimatedSection>
-                    <AnimatedSection delay={300}>
+                    </Reveal>
+                    <Reveal delay={300}>
                         <a href="/" className="mt-4 inline-flex items-center gap-2 h-12 px-8 rounded-xl bg-primary text-white text-sm font-bold hover:bg-blue-700 hover:scale-[1.02] active:scale-[0.98] transition-all">
                             Back to Home
                         </a>
-                    </AnimatedSection>
+                    </Reveal>
                 </div>
             </div>
         )
@@ -88,57 +72,74 @@ export default function Feedback() {
         <div className="bg-background-light dark:bg-background-dark text-slate-900 dark:text-white">
             <section className="py-20 px-6">
                 <div className="max-w-2xl mx-auto">
-                    <AnimatedSection>
+                    <Reveal>
                         <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 border border-primary/20 text-primary text-xs font-bold mb-6">
                             FEEDBACK
                         </div>
-                    </AnimatedSection>
-                    <AnimatedSection delay={100}>
+                    </Reveal>
+                    <Reveal delay={100}>
                         <h1 className="text-4xl md:text-5xl font-black leading-tight tracking-tight mb-4">
                             Share Your Experience
                         </h1>
-                    </AnimatedSection>
-                    <AnimatedSection delay={200}>
+                    </Reveal>
+                    <Reveal delay={200}>
                         <p className="text-lg text-slate-600 dark:text-slate-400 leading-relaxed mb-10">
                             Your feedback helps us build better tools for stock contributors worldwide.
                         </p>
-                    </AnimatedSection>
+                    </Reveal>
 
                     <form onSubmit={handleSubmit} className="flex flex-col gap-6">
                         <div className="p-6 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white/50 dark:bg-slate-900/50 flex flex-col gap-6">
-                            <AnimatedSection>
+                            <Reveal>
                                 <div className="flex flex-col gap-2">
                                     <label className="text-sm font-bold text-slate-900 dark:text-white">Your Rating</label>
                                     <div className="flex gap-1">
-                                        {Array.from({ length: 5 }).map((_, i) => (
-                                            <button
-                                                key={i}
-                                                type="button"
-                                                onMouseEnter={() => setHovered(i + 1)}
-                                                onMouseLeave={() => setHovered(0)}
-                                                onClick={() => setRating(i + 1)}
-                                                className="transition-transform hover:scale-110"
-                                            >
-                                                <Star className={`w-7 h-7 ${
-                                                    (hovered || rating) > i
-                                                        ? 'fill-yellow-400 text-yellow-400'
-                                                        : 'fill-slate-200 text-slate-200 dark:fill-slate-700 dark:text-slate-700'
-                                                }`} />
-                                            </button>
-                                        ))}
+                                        {Array.from({ length: 5 }).map((_, i) => {
+                                            const filled = (hovered || rating) > i
+                                            return (
+                                                <button
+                                                    key={i}
+                                                    type="button"
+                                                    onMouseEnter={() => setHovered(i + 1)}
+                                                    onMouseLeave={() => setHovered(0)}
+                                                    onClick={() => setRating(i + 1)}
+                                                    className="transition-transform hover:scale-110"
+                                                >
+                                                    <motion.span
+                                                        key={filled ? 'on' : 'off'}
+                                                        className="block"
+                                                        initial={{ scale: 0.6 }}
+                                                        animate={{ scale: 1 }}
+                                                        transition={{ duration: 0.2, ease: 'easeOut' }}
+                                                    >
+                                                        <Star className={`w-7 h-7 ${
+                                                            filled
+                                                                ? 'fill-yellow-400 text-yellow-400'
+                                                                : 'fill-slate-200 text-slate-200 dark:fill-slate-700 dark:text-slate-700'
+                                                        }`} />
+                                                    </motion.span>
+                                                </button>
+                                            )
+                                        })}
                                         {rating > 0 && (
-                                            <span className="ml-2 text-sm text-slate-500 dark:text-slate-400 self-center">
+                                            <motion.span
+                                                key={rating}
+                                                className="ml-2 text-sm text-slate-500 dark:text-slate-400 self-center"
+                                                initial={{ opacity: 0, x: -6 }}
+                                                animate={{ opacity: 1, x: 0 }}
+                                                transition={{ duration: 0.25, ease: 'easeOut' }}
+                                            >
                                                 {rating === 1 && 'Poor'}
                                                 {rating === 2 && 'Fair'}
                                                 {rating === 3 && 'Good'}
                                                 {rating === 4 && 'Very Good'}
                                                 {rating === 5 && 'Excellent'}
-                                            </span>
+                                            </motion.span>
                                         )}
                                     </div>
                                 </div>
-                            </AnimatedSection>
-                            <AnimatedSection delay={100}>
+                            </Reveal>
+                            <Reveal delay={100}>
                                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                                     <div className="flex flex-col gap-1.5">
                                         <label className="text-sm font-bold text-slate-900 dark:text-white">Name</label>
@@ -181,8 +182,8 @@ export default function Feedback() {
                                         </div>
                                     </div>
                                 </div>
-                            </AnimatedSection>
-                            <AnimatedSection delay={200}>
+                            </Reveal>
+                            <Reveal delay={200}>
                                 <div className="flex flex-col gap-1.5">
                                     <label className="text-sm font-bold text-slate-900 dark:text-white">Your Feedback</label>
                                     <textarea
@@ -194,9 +195,9 @@ export default function Feedback() {
                                         className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg px-4 py-3 text-sm text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-600 focus:ring-2 focus:ring-primary focus:border-transparent transition-all resize-none"
                                     />
                                 </div>
-                            </AnimatedSection>
+                            </Reveal>
                         </div>
-                        <AnimatedSection delay={300}>
+                        <Reveal delay={300}>
                             <button
                                 type="submit"
                                 disabled={rating === 0 || !message.trim() || createFeedback.isPending}
@@ -209,7 +210,7 @@ export default function Feedback() {
                                 )}
                                 {createFeedback.isPending ? 'Submitting...' : 'Submit Feedback'}
                             </button>
-                        </AnimatedSection>
+                        </Reveal>
                     </form>
                 </div>
             </section>

@@ -1,14 +1,15 @@
 import React, { useRef, useState } from 'react'
 import { useQueryClient } from '@tanstack/react-query'
 import { CloudUpload, Loader2 } from 'lucide-react'
+import { motion } from 'motion/react'
 import { axiosPrivate } from '../api_call/axiosInstance'
-import UploadAssets from '../components/workspace/UploadAssets'
-import FileQueue from '../components/workspace/FileQueue'
-import ProcessedFile from '../components/workspace/ProcessedFile'
-import SideBar from '../components/workspace/SideBar'
+import UploadAssets from '../components/studio/UploadAssets'
+import FileQueue from '../components/studio/FileQueue'
+import ProcessedFile from '../components/studio/ProcessedFile'
+import SideBar from '../components/studio/SideBar'
 import Toast from '../components/ui/Toast'
-import NewUserKeyModal, { NEW_USER_POPUP_DISMISS_KEY } from '../components/workspace/NewUserKeyModal'
-import CreditsExhaustedModal from '../components/workspace/CreditsExhaustedModal'
+import NewUserKeyModal, { NEW_USER_POPUP_DISMISS_KEY } from '../components/studio/NewUserKeyModal'
+import CreditsExhaustedModal from '../components/studio/CreditsExhaustedModal'
 import LockedFeatureCard from '../components/LockedFeatureCard'
 import { analyzeImage, DEFAULT_PLATFORM, PLATFORMS } from '../utils/geminiService'
 import { convertEpsToJpg } from '../utils/convertEps'
@@ -26,13 +27,13 @@ const makePreview = (file) => {
 let idCounter = 0
 const nextId = () => `file-${Date.now()}-${idCounter++}`
 
-export default function Workspace() {
+export default function Studio() {
     const queryClient = useQueryClient()
     const { data: subscription } = useCurrentSubscription()
     const isPremium = subscription?.plan?.tier === 'BASIC' || subscription?.plan?.tier === 'PRO'
     const isNewUser = subscription?.is_new_user === true
-    const hasWorkspaceAccess = subscription && (isPremium || isNewUser)
-    const workspaceLoading = subscription === undefined
+    const hasStudioAccess = subscription && (isPremium || isNewUser)
+    const studioLoading = subscription === undefined
     const [queueItems, setQueueItems] = useState([])
     const [processedFiles, setProcessedFiles] = useState([])
     const [platform, setPlatform] = useState(DEFAULT_PLATFORM)
@@ -82,6 +83,11 @@ export default function Workspace() {
 
     const handleSettingsChange = (key, value) => {
         setSettings(prev => ({ ...prev, [key]: value }))
+    }
+
+    const handleResetSettings = () => {
+        setSettings({ ...PLATFORMS[platform] })
+        setToast({ message: 'Metadata settings reset to defaults', type: 'success' })
     }
 
     const handleGenerate = async (forceOwnKey = false) => {
@@ -347,25 +353,31 @@ export default function Workspace() {
         <div>
             <div className="layout-container flex h-full grow flex-col">
                 <main className="flex-1 max-w-7xl mx-auto w-full px-4 lg:px-10 py-8">
-                    <div className="flex flex-wrap justify-between gap-3 mb-8">
+                    <motion.div
+                        className="flex flex-wrap justify-between gap-3 mb-8"
+                        initial={{ opacity: 0, y: 12 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.5, ease: 'easeOut' }}
+                    >
                         <div className="flex flex-col gap-1">
-                            <h1 className="text-slate-900 dark:text-white text-4xl font-black leading-tight tracking-[-0.033em] font-display">Workspace</h1>
-                            <p className="text-slate-500 dark:text-slate-400 text-base font-normal">Upload new assets and manage your generation queue.</p>
+                            <h1 className="text-slate-900 dark:text-white text-4xl font-black leading-tight tracking-[-0.033em] font-display">Studio</h1>
+                        <p className="text-slate-500 dark:text-slate-400 text-base font-normal">Upload images, generate metadata, and organize your batch — all in one place.</p>
                         </div>
-                    </div>
-                    {workspaceLoading ? (
+                    </motion.div>
+                    {studioLoading ? (
                         <div className="flex items-center justify-center py-16">
                             <Loader2 className="w-6 h-6 animate-spin text-primary/60" />
                         </div>
-                    ) : !hasWorkspaceAccess ? (
-                        <LockedFeatureCard title="Premium feature" description="The workspace is available to Premium members and to members within their first month. Upgrade your plan to keep processing images." />
+                    ) : !hasStudioAccess ? (
+                        <LockedFeatureCard title="Premium feature" description="The studio is available to Premium members and to members within their first month. Upgrade your plan to keep processing images." />
                     ) : (
                     <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
                         <div className="lg:col-span-7 flex flex-col gap-8">
                             <div className="flex flex-col gap-3">
                                 <div className="flex items-center gap-2 mb-1">
+                                    <span className="w-6 h-6 rounded-lg bg-primary/10 text-primary flex items-center justify-center text-[11px] font-black font-display shrink-0">1</span>
                                     <CloudUpload className="w-5 h-5 text-primary" />
-                                    <h3 className="text-slate-900 dark:text-white text-lg font-bold font-display">Upload Assets</h3>
+                                    <h3 className="text-slate-900 dark:text-white text-lg font-bold font-display">Add files</h3>
                                 </div>
                                 <UploadAssets onUpload={handleUpload}/>
                             </div>
@@ -394,6 +406,7 @@ export default function Workspace() {
                             onPlatformChange={handlePlatformChange}
                             onCustomPromptChange={setCustomPrompt}
                             onSettingsChange={handleSettingsChange}
+                            onReset={handleResetSettings}
                         />
                     </div>
                     )}

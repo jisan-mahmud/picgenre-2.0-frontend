@@ -1,30 +1,13 @@
 import React from 'react'
 import { ArrowRight, Upload, Sparkles, CheckCircle, Key, Terminal, Layers, Clock, Download, Tag, FileText, Image as ImageIcon } from 'lucide-react'
-import { useInView } from '../hooks/useInView'
-
-function AnimatedSection({ children, className = '', delay = 0 }) {
-    const [ref, isInView] = useInView()
-    return (
-        <div
-            ref={ref}
-            className={className}
-            style={{
-                opacity: isInView ? 1 : 0,
-                transform: isInView ? 'translateY(0)' : 'translateY(24px)',
-                transition: `opacity 0.6s ease-out ${delay}ms, transform 0.6s ease-out ${delay}ms`,
-            }}
-        >
-            {children}
-        </div>
-    )
-}
+import Reveal from '../components/ui/Reveal'
 
 const steps = [
     {
         num: '01',
         icon: Upload,
         title: 'Upload Your Files',
-        desc: 'Drag and drop your images, SVGs, EPS files, PDFs, or documents into the workspace. Batch upload hundreds of files at once — no size limits on supported plans.',
+        desc: 'Drag and drop your images, SVGs, EPS files, PDFs, or documents into the studio. Batch upload hundreds of files at once — no size limits on supported plans.',
         details: ['PNG, JPG, SVG, EPS supported', 'PDF and DOCX documents', 'Batch upload up to 500 files', 'Drag & drop or click to browse'],
     },
     {
@@ -81,7 +64,7 @@ export default function HowItWorks() {
             <section className="relative pt-20 pb-16 px-6 overflow-hidden">
                 <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[700px] h-[350px] bg-primary/10 blur-[120px] rounded-full -z-10" />
                 <div className="max-w-3xl mx-auto text-center">
-                    <AnimatedSection>
+                    <Reveal>
                         <p className="text-xs font-bold uppercase tracking-[0.2em] text-primary mb-4">HOW IT WORKS</p>
                         <h1 className="text-4xl md:text-6xl font-black leading-tight tracking-tight mb-6">
                             From Upload to Metadata in <span className="text-primary">Seconds</span>
@@ -89,18 +72,18 @@ export default function HowItWorks() {
                         <p className="text-lg md:text-xl text-slate-600 dark:text-slate-400 max-w-2xl mx-auto leading-relaxed">
                             Picgenre's AI pipeline handles everything — just upload your files and get production-ready metadata instantly.
                         </p>
-                    </AnimatedSection>
-                    <AnimatedSection delay={150}>
+                    </Reveal>
+                    <Reveal delay={150}>
                         <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mt-10">
-                            <a href="/workspace" className="inline-flex items-center gap-2 h-14 px-8 rounded-xl bg-primary text-white text-base font-bold hover:bg-blue-700 hover:scale-[1.02] active:scale-[0.98] transition-all shadow-lg shadow-primary/20">
+                            <a href="/studio" className="inline-flex items-center gap-2 h-14 px-8 rounded-xl bg-primary text-white text-base font-bold hover:bg-blue-700 hover:scale-[1.02] active:scale-[0.98] transition-all shadow-lg shadow-primary/20 group">
                                 Try It Free
-                                <ArrowRight className="w-5 h-5" />
+                                <ArrowRight className="w-5 h-5 transition-transform duration-300 group-hover:translate-x-1" />
                             </a>
                             <a href="/pricing" className="inline-flex items-center gap-2 h-14 px-8 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-base font-bold hover:bg-slate-50 dark:hover:bg-slate-700 transition-all">
                                 View Pricing
                             </a>
                         </div>
-                    </AnimatedSection>
+                    </Reveal>
                 </div>
             </section>
 
@@ -112,11 +95,11 @@ export default function HowItWorks() {
                             const Icon = step.icon
                             const isEven = i % 2 === 1
                             return (
-                                <AnimatedSection key={i} delay={i * 100}>
-                                    <div className={`flex flex-col md:flex-row items-center gap-10 ${isEven ? 'md:flex-row-reverse' : ''}`}>
+                                <Reveal key={i} delay={i * 100}>
+                                    <div className={`flex flex-col md:flex-row items-center gap-10 group ${isEven ? 'md:flex-row-reverse' : ''}`}>
                                         {/* Icon block */}
                                         <div className="flex-shrink-0 flex flex-col items-center gap-4">
-                                            <div className="w-28 h-28 rounded-3xl bg-primary/10 border border-primary/20 flex items-center justify-center">
+                                            <div className="w-28 h-28 rounded-3xl bg-primary/10 border border-primary/20 flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
                                                 <Icon className="w-12 h-12 text-primary" />
                                             </div>
                                             <span className="text-xs font-black text-primary tracking-widest">STEP {step.num}</span>
@@ -135,7 +118,7 @@ export default function HowItWorks() {
                                             </ul>
                                         </div>
                                     </div>
-                                </AnimatedSection>
+                                </Reveal>
                             )
                         })}
                     </div>
@@ -145,7 +128,7 @@ export default function HowItWorks() {
             {/* Features highlight */}
             <section className="py-24 px-6 border-t border-slate-200 dark:border-slate-800">
                 <div className="max-w-5xl mx-auto">
-                    <AnimatedSection>
+                    <Reveal>
                         <div className="text-center mb-12">
                             <p className="text-xs font-bold uppercase tracking-[0.2em] text-primary mb-4">BUILT FOR SPEED</p>
                             <h2 className="text-3xl md:text-5xl font-black tracking-tight mb-4">Everything You Need</h2>
@@ -153,7 +136,7 @@ export default function HowItWorks() {
                                 A complete metadata workflow in one tool.
                             </p>
                         </div>
-                    </AnimatedSection>
+                    </Reveal>
                     <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-5">
                         {[
                             { icon: Layers, title: 'Batch Processing', desc: 'Process hundreds of files at once without any slowdown.' },
@@ -165,7 +148,7 @@ export default function HowItWorks() {
                         ].map((f, i) => {
                             const Icon = f.icon
                             return (
-                                <AnimatedSection key={i} delay={i * 80}>
+                                <Reveal key={i} delay={i * 80}>
                                     <div className="flex flex-col gap-4 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/40 hover:bg-slate-50 dark:hover:bg-slate-900 hover:-translate-y-1 hover:shadow-lg transition-all duration-300 group">
                                         <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center text-primary group-hover:bg-primary group-hover:text-white transition-all duration-300">
                                             <Icon className="w-6 h-6" />
@@ -175,7 +158,7 @@ export default function HowItWorks() {
                                             <p className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed">{f.desc}</p>
                                         </div>
                                     </div>
-                                </AnimatedSection>
+                                </Reveal>
                             )
                         })}
                     </div>
@@ -185,17 +168,17 @@ export default function HowItWorks() {
             {/* FAQ */}
             <section className="py-24 px-6 border-t border-slate-200 dark:border-slate-800">
                 <div className="max-w-3xl mx-auto">
-                    <AnimatedSection>
+                    <Reveal>
                         <h2 className="text-3xl md:text-4xl font-black tracking-tight text-center mb-12">Frequently Asked Questions</h2>
-                    </AnimatedSection>
+                    </Reveal>
                     <div className="space-y-4">
                         {faqs.map((faq, i) => (
-                            <AnimatedSection key={i} delay={i * 80}>
+                            <Reveal key={i} delay={i * 80}>
                                 <div className="p-6 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/40">
                                     <h4 className="font-bold mb-2">{faq.q}</h4>
                                     <p className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed">{faq.a}</p>
                                 </div>
-                            </AnimatedSection>
+                            </Reveal>
                         ))}
                     </div>
                 </div>
@@ -203,18 +186,18 @@ export default function HowItWorks() {
 
             {/* CTA */}
             <section className="py-24 px-6 border-t border-slate-200 dark:border-slate-800">
-                <AnimatedSection>
+                <Reveal>
                     <div className="max-w-2xl mx-auto text-center">
                         <h2 className="text-3xl md:text-5xl font-black tracking-tight mb-4">Ready to Get Started?</h2>
                         <p className="text-lg text-slate-600 dark:text-slate-400 mb-10 leading-relaxed">
                             Upload your first file and get metadata in under 3 seconds — no credit card required.
                         </p>
-                        <a href="/workspace" className="inline-flex items-center gap-2 h-14 px-10 rounded-xl bg-primary text-white text-base font-bold hover:bg-blue-700 hover:scale-[1.02] active:scale-[0.98] transition-all shadow-lg shadow-primary/20">
+                        <a href="/studio" className="inline-flex items-center gap-2 h-14 px-10 rounded-xl bg-primary text-white text-base font-bold hover:bg-blue-700 hover:scale-[1.02] active:scale-[0.98] transition-all shadow-lg shadow-primary/20 group">
                             Start for Free
-                            <ArrowRight className="w-5 h-5" />
+                            <ArrowRight className="w-5 h-5 transition-transform duration-300 group-hover:translate-x-1" />
                         </a>
                     </div>
-                </AnimatedSection>
+                </Reveal>
             </section>
 
         </div>

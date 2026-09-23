@@ -12,7 +12,7 @@ export const useProcessFiles = () => {
         formData.append(`file_${index}`, file);
       });
 
-      const response = await axiosPrivate.post('/workspace/process-files', formData, {
+      const response = await axiosPrivate.post('/studio/process-files', formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
         },
@@ -21,16 +21,16 @@ export const useProcessFiles = () => {
     },
     onSuccess: () => {
       // Invalidate processed files query
-      queryClient.invalidateQueries({ queryKey: ['workspace', 'processed-files'] });
+      queryClient.invalidateQueries({ queryKey: ['studio', 'processed-files'] });
     },
   });
 };
 
 export const useProcessedFiles = () => {
   return useQuery({
-    queryKey: ['workspace', 'processed-files'],
+    queryKey: ['studio', 'processed-files'],
     queryFn: async () => {
-      const response = await axiosPrivate.get('/workspace/processed-files');
+      const response = await axiosPrivate.get('/studio/processed-files');
       return response.data;
     },
     staleTime: 1000 * 60 * 2, // 2 minutes
@@ -39,9 +39,9 @@ export const useProcessedFiles = () => {
 
 export const useFileQueue = () => {
   return useQuery({
-    queryKey: ['workspace', 'queue'],
+    queryKey: ['studio', 'queue'],
     queryFn: async () => {
-      const response = await axiosPrivate.get('/workspace/queue');
+      const response = await axiosPrivate.get('/studio/queue');
       return response.data;
     },
     staleTime: 1000 * 30, // 30 seconds
@@ -55,11 +55,11 @@ export const useRemoveFromQueue = () => {
 
   return useMutation({
     mutationFn: async (fileId) => {
-      const response = await axiosPrivate.delete(`/workspace/queue/${fileId}`);
+      const response = await axiosPrivate.delete(`/studio/queue/${fileId}`);
       return response.data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['workspace', 'queue'] });
+      queryClient.invalidateQueries({ queryKey: ['studio', 'queue'] });
     },
   });
 };
@@ -69,12 +69,12 @@ export const useStopProcessing = () => {
 
   return useMutation({
     mutationFn: async () => {
-      const response = await axiosPrivate.post('/workspace/stop-processing');
+      const response = await axiosPrivate.post('/studio/stop-processing');
       return response.data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['workspace', 'queue'] });
-      queryClient.invalidateQueries({ queryKey: ['workspace', 'processed-files'] });
+      queryClient.invalidateQueries({ queryKey: ['studio', 'queue'] });
+      queryClient.invalidateQueries({ queryKey: ['studio', 'processed-files'] });
     },
   });
 };

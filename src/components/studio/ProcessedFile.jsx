@@ -1,16 +1,23 @@
 import React, { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { CheckCircle, Download, Image, Clock, Copy, Tag, FileText, AlignLeft, BookmarkPlus, Lock } from 'lucide-react'
+import { Copy, BookmarkPlus, CheckCircle2, Download, Image, Clock, Lock, Tag, AlignLeft, Sparkles, Plus } from 'lucide-react'
+import { motion, AnimatePresence } from 'motion/react'
 import Toast from '../ui/Toast'
 import Tooltip from '../ui/Tooltip'
 
-export default function ProcessedFile({ files = [], onExportAll, onSaveHistory, canSaveHistory = false }) {
+export default function ProcessedFile({
+    files = [],
+    onExportAll,
+    onSaveHistory,
+    canSaveHistory = false,
+    onAddFiles,
+}) {
     const navigate = useNavigate()
     const [toast, setToast] = useState(null)
 
     const copyToClipboard = (text, type) => {
         if (!text) return
-        navigator.clipboard.writeText(text)
+        navigator.clipboard?.writeText(text)
         setToast({ message: `${type} copied to clipboard!`, type: 'success' })
     }
 
@@ -36,17 +43,15 @@ export default function ProcessedFile({ files = [], onExportAll, onSaveHistory, 
     }
 
     return (
-        <div className="flex flex-col gap-4">
-            <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                    <CheckCircle className="w-5 h-5 text-green-500" />
-                    <h3 className="text-slate-900 dark:text-white text-lg font-bold font-display">Processed Results ({files.length})</h3>
+        <div className="bg-white dark:bg-slate-900/40 rounded-xl shadow-sm border border-slate-200 dark:border-slate-800 flex flex-col gap-2">
+            <div className="px-6 py-4 border-b border-slate-100 dark:border-slate-900/40 flex items-center justify-between gap-3 flex-wrap">
+                <div className="flex items-center gap-2 min-w-0">
+                    <span className="size-6 shrink-0 rounded-lg bg-primary/10 text-primary flex items-center justify-center text-[11px] font-black font-display">3</span>
+                    <CheckCircle2 className="w-5 h-5 text-primary shrink-0" />
+                    <h3 className="text-slate-900 dark:text-white text-lg font-bold font-display truncate">Your Results <span className="text-primary">({files.length})</span></h3>
                 </div>
                 <div className="flex items-center gap-2">
-                    <Tooltip
-                        title="Export all"
-                        description="Download the metadata CSV for every processed file to your device."
-                    >
+                    <Tooltip title="Export all" description="Download the metadata CSV for every processed file to your device.">
                         <button
                             onClick={handleExportAll}
                             disabled={files.length === 0}
@@ -60,7 +65,7 @@ export default function ProcessedFile({ files = [], onExportAll, onSaveHistory, 
                         description={canSaveHistory
                             ? files.length === 0
                                 ? 'Nothing to save yet — generate metadata first.'
-                                : 'Store this batch\'s metadata CSV in your account and download it anytime from Batch History.'
+                                : "Store this batch's metadata CSV in your account and download it anytime from Batch History."
                             : 'Upgrade to save your metadata CSV and download it later from Batch History.'}
                     >
                         <button
@@ -77,15 +82,38 @@ export default function ProcessedFile({ files = [], onExportAll, onSaveHistory, 
                     </Tooltip>
                 </div>
             </div>
-            <div className="grid grid-cols-1 gap-4">
-                {files.length === 0 ? (
-                    <div className="bg-white dark:bg-slate-900/40 rounded-xl shadow-sm border border-slate-200 dark:border-slate-800 p-8 text-center text-slate-400">
-                        <Clock className="w-10 h-10 mb-2 text-slate-400" />
-                        <p className="text-sm">No processed files yet</p>
+
+            {files.length === 0 ? (
+                <div className="flex flex-col items-center justify-center gap-3 px-6 py-12 text-center">
+                    <div className="size-14 rounded-2xl bg-primary/10 text-primary flex items-center justify-center">
+                        <Sparkles className="w-7 h-7" />
                     </div>
-                ) : (
-                    files.map((file, index) => (
-                        <div key={index} className="bg-white dark:bg-slate-900/40 rounded-xl shadow-sm border border-slate-200 dark:border-slate-800 p-5">
+                    <h4 className="text-slate-900 dark:text-white text-base font-bold font-display">No results yet</h4>
+                    <p className="text-slate-500 dark:text-slate-400 text-sm max-w-xs leading-relaxed">
+                        Upload images and hit <span className="text-primary font-bold">Generate</span> — your AI metadata, tags, and descriptions will appear right here.
+                    </p>
+                    {onAddFiles && (
+                        <button
+                            onClick={onAddFiles}
+                            className="mt-1 inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-primary/10 text-primary text-sm font-bold hover:bg-primary/20 transition-colors"
+                        >
+                            <Plus className="w-4 h-4" /> Add files
+                        </button>
+                    )}
+                </div>
+            ) : (
+                <div className="grid grid-cols-1 gap-4 p-6">
+                    <AnimatePresence initial={false}>
+                    {files.map((file, index) => (
+                        <motion.div
+                            key={index}
+                            initial={{ opacity: 0, y: 12, scale: 0.98 }}
+                            animate={{ opacity: 1, y: 0, scale: 1 }}
+                            exit={{ opacity: 0, scale: 0.96 }}
+                            transition={{ duration: 0.3 }}
+                            layout
+                            className="bg-white dark:bg-slate-900/40 rounded-xl shadow-sm border border-slate-200 dark:border-slate-800 p-5"
+                        >
                             <div className="flex flex-col md:flex-row md:items-start gap-4">
                                 <div className="flex items-start gap-4 flex-1 min-w-0">
                                     <div className="w-20 h-20 shrink-0 rounded-lg bg-slate-100 dark:bg-slate-900 flex items-center justify-center text-slate-400 overflow-hidden border border-slate-200 dark:border-slate-800">
@@ -139,10 +167,11 @@ export default function ProcessedFile({ files = [], onExportAll, onSaveHistory, 
                                     </button>
                                 </div>
                             </div>
-                        </div>
-                    ))
-                )}
-            </div>
+                        </motion.div>
+                    ))}
+                    </AnimatePresence>
+                </div>
+            )}
             {toast && <Toast message={toast.message} type={toast.type} onClose={() => setToast(null)} />}
         </div>
     )

@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { Crown, Rocket, ArrowRight, ChevronUp, ChevronDown } from 'lucide-react'
+import { AnimatePresence, motion } from 'motion/react'
 
 export const AUDIENCE_CARD_OPEN_KEY = 'picgenre_audience_card_open'
 
@@ -73,9 +74,21 @@ export default function AudienceCard({ isPremium, isNewUser, showUpgrade = false
                     className="p-2 rounded-lg text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
                 >
                     {open ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
-                </button>
+            </button>
             </div>
-            {open && body}
+            <AnimatePresence initial={false}>
+                {open && (
+                    <motion.div
+                        initial={{ opacity: 0, height: 0 }}
+                        animate={{ opacity: 1, height: 'auto' }}
+                        exit={{ opacity: 0, height: 0 }}
+                        transition={{ duration: 0.3, ease: 'easeInOut' }}
+                        className="overflow-hidden"
+                    >
+                        <div className="pt-1">{body}</div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
         </div>
     )
 }

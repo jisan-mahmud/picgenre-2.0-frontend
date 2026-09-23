@@ -1,26 +1,36 @@
 import React from 'react'
+import Reveal from '../components/ui/Reveal'
 
 export default function PrivacyPolicy() {
     return (
         <div className="bg-background-light dark:bg-background-dark text-slate-900 dark:text-white">
             <section className="pt-20 pb-12 px-6">
                 <div className="max-w-3xl mx-auto">
-                    <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 border border-primary/20 text-primary text-xs font-bold mb-6">
-                        LAST UPDATED: MAY 24, 2024
-                    </div>
-                    <h1 className="text-4xl md:text-5xl font-black leading-tight tracking-tight mb-4 text-slate-900 dark:text-white">
-                        Privacy Policy
-                    </h1>
-                    <p className="text-lg text-slate-600 dark:text-slate-400 leading-relaxed">
-                        Your privacy is fundamental to our mission at Picgenre. This policy outlines how we handle your data with transparency and security.
-                    </p>
+                    <Reveal>
+                        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 border border-primary/20 text-primary text-xs font-bold mb-6">
+                            LAST UPDATED: MAY 24, 2024
+                        </div>
+                    </Reveal>
+                    <Reveal delay={100}>
+                        <h1 className="text-4xl md:text-5xl font-black leading-tight tracking-tight mb-4 text-slate-900 dark:text-white">
+                            Privacy Policy
+                        </h1>
+                    </Reveal>
+                    <Reveal delay={200}>
+                        <p className="text-lg text-slate-600 dark:text-slate-400 leading-relaxed">
+                            Your privacy is fundamental to our mission at Picgenre. This policy outlines how we handle your data with transparency and security.
+                        </p>
+                    </Reveal>
                 </div>
             </section>
             <section className="pb-24 px-6">
                 <div className="max-w-3xl mx-auto prose prose-slate dark:prose-invert">
+                    <Reveal>
                     <p className="text-slate-700 dark:text-slate-300">
                         At Picgenre, we are committed to protecting your personal information and your right to privacy. If you have any questions or concerns about our policy, or our practices with regards to your personal information, please contact us at privacy@picgenre.com.
                     </p>
+                    </Reveal>
+                    <Reveal>
                     <h2 id="data-collection" className="text-slate-900 dark:text-white">1. Data Collection</h2>
                     <p className="text-slate-700 dark:text-slate-300">
                         We collect information that you provide directly to us when you register for an account, use our services, or communicate with us.
@@ -42,6 +52,8 @@ export default function PrivacyPolicy() {
                             </div>
                         </div>
                     </div>
+                    </Reveal>
+                    <Reveal>
                     <h2 id="usage-information" className="text-slate-900 dark:text-white">2. Usage of Information</h2>
                     <p className="text-slate-700 dark:text-slate-300">
                         We use the information we collect to operate, maintain, and provide the features and functionality of the Service, as well as to communicate directly with you.
@@ -52,6 +64,8 @@ export default function PrivacyPolicy() {
                         <li>To provide you with news, special offers and general information about other goods, services and events which we offer.</li>
                         <li>To detect, prevent and address technical issues or security breaches.</li>
                     </ul>
+                    </Reveal>
+                    <Reveal>
                     <h2 id="third-party" className="text-slate-900 dark:text-white">3. Third Party Services</h2>
                     <p className="text-slate-700 dark:text-slate-300">
                         To provide high-performance AI features, we partner with specialized third-party infrastructure providers. These services are vetted for their privacy standards.
@@ -66,10 +80,14 @@ export default function PrivacyPolicy() {
                         <li>Usage analytics to improve performance and user experience.</li>
                         <li>Payment processing through secure, PCI-compliant gateways.</li>
                     </ul>
+                    </Reveal>
+                    <Reveal>
                     <h2 id="retention" className="text-slate-900 dark:text-white">4. Data Retention</h2>
                     <p className="text-slate-700 dark:text-slate-300">
                         We will retain your Personal Data only for as long as is necessary for the purposes set out in this Privacy Policy. We will retain and use your Personal Data to the extent necessary to comply with our legal obligations, resolve disputes, and enforce our legal agreements and policies.
                     </p>
+                    </Reveal>
+                    <Reveal>
                     <h2 id="rights" className="text-slate-900 dark:text-white">5. Your Privacy Rights</h2>
                     <p className="text-slate-700 dark:text-slate-300">
                         Depending on your location, you may have the following rights regarding your personal data:
@@ -81,11 +99,14 @@ export default function PrivacyPolicy() {
                         <li>The right of restriction.</li>
                         <li>The right to data portability.</li>
                     </ul>
+                    </Reveal>
+                    <Reveal>
                     <div className="mt-16 pt-8 border-t border-slate-200 dark:border-slate-800">
                         <p className="text-sm text-slate-500 italic">
                             If you have questions about this Privacy Policy, please contact us at <a className="text-primary hover:underline" href="mailto:support@picgenre.com">support@picgenre.com</a>.
                         </p>
                     </div>
+                    </Reveal>
                 </div>
             </section>
         </div>

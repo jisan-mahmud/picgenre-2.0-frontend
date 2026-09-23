@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react'
 import { CloudUpload, Download, Package, FileType2, Settings2, ArrowRight, X, Loader2, AlertCircle, CheckCircle2, Sparkles, RefreshCw, Palette } from 'lucide-react'
+import { motion, AnimatePresence } from 'motion/react'
 import Toast from '../components/ui/Toast'
 import AudienceCard from '../components/AudienceCard'
 import LockedFeatureCard from '../components/LockedFeatureCard'
@@ -176,7 +177,12 @@ export default function Tools() {
             <div className="layout-container flex h-full grow flex-col">
                 <main className="flex-1 max-w-7xl mx-auto w-full px-4 lg:px-10 py-8">
                     <div className="flex flex-wrap justify-between gap-3 mb-8">
-                        <div className="flex flex-col gap-1">
+                        <motion.div
+                            className="flex flex-col gap-1"
+                            initial={{ opacity: 0, y: 12 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ duration: 0.5, ease: 'easeOut' }}
+                        >
                             <div className="flex items-center gap-2">
                                 <h1 className="text-slate-900 dark:text-white text-4xl font-black leading-tight tracking-[-0.033em] font-display">Image Tools</h1>
                                 <span className="inline-flex items-center gap-1.5 rounded-full bg-primary/10 text-primary px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider">
@@ -185,7 +191,7 @@ export default function Tools() {
                                 </span>
                             </div>
                             <p className="text-slate-500 dark:text-slate-400 text-base font-normal">Convert images between formats. Runs in your browser; EPS uses our secure converter.</p>
-                        </div>
+                        </motion.div>
                     </div>
 
                     {subscriptionLoading ? (
@@ -311,8 +317,17 @@ export default function Tools() {
                                         <span className="text-xs text-slate-500 dark:text-slate-400">{queueItems.length} file{queueItems.length !== 1 ? 's' : ''}</span>
                                     </div>
                                     <div className="divide-y divide-slate-100 dark:divide-slate-800">
+                                        <AnimatePresence initial={false}>
                                         {queueItems.map(item => (
-                                            <div key={item.id} className="flex items-center gap-3 px-5 py-3">
+                                            <motion.div
+                                                key={item.id}
+                                                initial={{ opacity: 0, x: -16 }}
+                                                animate={{ opacity: 1, x: 0 }}
+                                                exit={{ opacity: 0, x: 16 }}
+                                                transition={{ duration: 0.25 }}
+                                                layout
+                                                className="flex items-center gap-3 px-5 py-3"
+                                            >
                                                 {item.preview
                                                     ? <img src={item.preview} alt={item.file.name} className="w-9 h-9 rounded-lg object-cover bg-slate-100 dark:bg-slate-800" />
                                                     : <div className="w-9 h-9 rounded-lg bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-slate-400"><FileType2 className="w-4 h-4" /></div>}
@@ -327,8 +342,9 @@ export default function Tools() {
                                                         <X size={16} />
                                                     </button>
                                                 )}
-                                            </div>
+                                            </motion.div>
                                         ))}
+                                        </AnimatePresence>
                                     </div>
                                 </div>
                             )}
@@ -410,8 +426,17 @@ export default function Tools() {
                                     </div>
                                 ) : (
                                     <div className="flex flex-col gap-3 max-h-72 overflow-y-auto scrollbar-thin pr-1">
+                                        <AnimatePresence initial={false}>
                                         {results.map(r => (
-                                            <div key={r.id} className="flex items-center gap-3">
+                                            <motion.div
+                                                key={r.id}
+                                                initial={{ opacity: 0, y: 8, scale: 0.98 }}
+                                                animate={{ opacity: 1, y: 0, scale: 1 }}
+                                                exit={{ opacity: 0, scale: 0.96 }}
+                                                transition={{ duration: 0.25 }}
+                                                layout
+                                                className="flex items-center gap-3"
+                                            >
                                                 <img src={r.preview} alt={r.name} className="w-10 h-10 rounded-lg object-cover bg-slate-100 dark:bg-slate-800" />
                                                 <div className="flex-1 min-w-0">
                                                     <p className="text-sm text-slate-900 dark:text-white font-medium truncate">{r.name}</p>
@@ -424,8 +449,9 @@ export default function Tools() {
                                                 >
                                                     <Download size={18} />
                                                 </button>
-                                            </div>
+                                            </motion.div>
                                         ))}
+                                        </AnimatePresence>
                                     </div>
                                 )}
 
