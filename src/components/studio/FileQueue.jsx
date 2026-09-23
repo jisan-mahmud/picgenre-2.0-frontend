@@ -9,8 +9,8 @@ const STATUS_BADGES = {
 
 const getFileType = (filename) => {
     const ext = filename.split('.').pop().toLowerCase()
-    if (['jpg', 'jpeg', 'png'].includes(ext)) return 'Image'
-    if (ext === 'eps') return 'Vector'
+    if (['jpg', 'jpeg', 'png', 'webp'].includes(ext)) return 'Image'
+    if (['eps', 'svg'].includes(ext)) return 'Vector'
     return 'File'
 }
 

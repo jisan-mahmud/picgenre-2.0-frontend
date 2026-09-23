@@ -1,5 +1,5 @@
 import React from 'react'
-import { ArrowRight, Upload, Sparkles, CheckCircle, Key, Terminal, Layers, Clock, Download, Tag, FileText, Image as ImageIcon } from 'lucide-react'
+import { ArrowRight, Upload, Sparkles, CheckCircle, Key, Terminal, Layers, Clock, Download, Tag, FileText, Image as ImageIcon, RefreshCw } from 'lucide-react'
 import Reveal from '../components/ui/Reveal'
 
 const steps = [
@@ -7,8 +7,8 @@ const steps = [
         num: '01',
         icon: Upload,
         title: 'Upload Your Files',
-        desc: 'Drag and drop your images, SVGs, EPS files, PDFs, or documents into the studio. Batch upload hundreds of files at once — no size limits on supported plans.',
-        details: ['PNG, JPG, SVG, EPS supported', 'PDF and DOCX documents', 'Batch upload up to 500 files', 'Drag & drop or click to browse'],
+        desc: 'Drag and drop JPG, PNG, WEBP, EPS, or SVG files into the studio — up to 50MB per file. Batch upload as many files as you like.',
+        details: ['JPG, PNG, WEBP, EPS, SVG supported', 'EPS → server, SVG → browser', 'Batch upload many files', 'Drag & drop or click to browse'],
     },
     {
         num: '02',
@@ -22,25 +22,25 @@ const steps = [
         icon: Tag,
         title: 'Metadata is Generated',
         desc: 'SEO-optimized titles, keyword tags, and descriptions are created for each file. All metadata follows platform-specific guidelines for maximum discoverability.',
-        details: ['SEO-optimized titles', 'Up to 50 keyword tags', 'Platform-specific formatting', 'Multi-language support'],
+        details: ['SEO-optimized titles', 'Up to 50 keyword tags', 'Platform-specific limits', 'CSV-ready metadata'],
     },
     {
         num: '04',
         icon: Download,
         title: 'Export & Use',
-        desc: 'Copy metadata instantly or export everything as CSV, JSON, or XML. Ready to paste directly into Adobe Stock, Shutterstock, Freepik, and more.',
-        details: ['CSV, JSON, XML export', 'One-click copy per file', 'Bulk export all results', 'Platform-ready formatting'],
+        desc: 'Copy metadata instantly or export a platform-ready CSV — each platform gets its own official column format. Ready to paste into any of the 7 supported platforms.',
+        details: ['Per-platform CSV export', '7 stock platforms supported', 'One-click copy per file', 'Bulk export all results'],
     },
 ]
 
 const faqs = [
     {
         q: 'What file formats are supported?',
-        a: 'Picgenre supports PNG, JPG, SVG, EPS, PDF, DOCX, and MP4. More formats are being added regularly.',
+        a: 'Picgenre supports JPG, PNG, WEBP, EPS, and SVG files. More formats are being added regularly.',
     },
     {
         q: 'Do I need an API key?',
-        a: 'Free users need to provide their own Gemini API key. Plus and Pro plans include fast credits so no key is required.',
+        a: 'Free users need to provide their own Gemini API key. Basic and Pro plans include fast credits so no key is required.',
     },
     {
         q: 'How accurate is the AI metadata?',
@@ -48,11 +48,15 @@ const faqs = [
     },
     {
         q: 'Can I process files in bulk?',
-        a: 'Yes. You can upload and process hundreds of files simultaneously. Batch size limits depend on your plan.',
+        a: 'Yes. You can upload and process many files simultaneously. Batch size limits depend on your plan.',
+    },
+    {
+        q: 'Are the Image Tools free?',
+        a: 'Yes — the image converter is free for Premium members. New members get full access to all tools for their first month.',
     },
     {
         q: 'Which platforms is the metadata optimized for?',
-        a: 'Metadata is tailored for Adobe Stock, Shutterstock, Freepik, and Vecteezy — following each platform\'s specific requirements.',
+        a: 'Metadata is tailored for Adobe Stock, Shutterstock, Magnific, Vecteezy, 123RF, Pond5, and Dreamstime — following each platform\'s specific requirements.',
     },
 ]
 
@@ -141,10 +145,11 @@ export default function HowItWorks() {
                         {[
                             { icon: Layers, title: 'Batch Processing', desc: 'Process hundreds of files at once without any slowdown.' },
                             { icon: Key, title: 'Bring Your Own Key', desc: 'Use your own Gemini API key for full cost control.' },
-                            { icon: Terminal, title: 'Flexible Export', desc: 'Export as CSV, JSON, or XML for any platform or CMS.' },
+                            { icon: Terminal, title: 'Flexible Export', desc: 'Export a platform-ready CSV for any of 7 stock platforms.' },
                             { icon: Clock, title: '2.4s Per File', desc: 'Lightning-fast processing with concurrent AI workers.' },
-                            { icon: ImageIcon, title: '50+ Formats', desc: 'Images, vectors, documents, and video all supported.' },
-                            { icon: FileText, title: 'Platform-Ready', desc: 'Metadata formatted for Adobe Stock, Shutterstock & more.' },
+                            { icon: ImageIcon, title: '5 Formats', desc: 'JPG, PNG, WEBP, EPS & SVG — vectors converted automatically.' },
+                            { icon: FileText, title: 'Platform-Ready', desc: 'Metadata formatted for Adobe Stock, Shutterstock, and more.' },
+                            { icon: RefreshCw, title: 'Free Image Tools', desc: 'Convert between 9 image formats in your browser. Free for Premium members — 1-month trial for new members.' },
                         ].map((f, i) => {
                             const Icon = f.icon
                             return (

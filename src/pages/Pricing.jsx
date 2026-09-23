@@ -11,20 +11,32 @@ const faqs = [
         a: 'Plan changes are not currently supported. Once you subscribe to a plan, it remains active until the end of your billing cycle. Please choose your plan carefully.',
     },
     {
-        q: 'What happens when my tokens run out?',
-        a: 'When your fast credits are exhausted, you can provide your own Groq API key to continue processing. Your key will be used as a fallback until your credits reset next month.',
+        q: 'What is the free trial?',
+        a: 'New members get full access to the Metadata Studio and Image Tools free during their first month. After the trial you can upgrade to Basic or Pro to keep going.',
     },
     {
-        q: 'Do you offer API access?',
-        a: 'API access is available on our Plus plan for standard usage and on Pro for high-volume needs. Free users must provide their own LLM API key.',
+        q: 'Do I need an API key?',
+        a: 'Basic and Pro plans include fast credits, so no API key is required. During your first month, new members can add their own Gemini API key in Settings → AI Models.',
+    },
+    {
+        q: 'What happens when my credits run out?',
+        a: 'Once your monthly credits are exhausted, you can add your own Gemini API key in Settings → AI Models to continue processing. Credits reset at the start of your billing cycle.',
+    },
+    {
+        q: 'Which platforms are supported?',
+        a: 'Metadata Studio covers 7 stock platforms: Adobe Stock, Shutterstock, Magnific, Vecteezy, 123RF, Pond5, and Dreamstime — each with its official CSV columns.',
+    },
+    {
+        q: 'What are the Image Tools?',
+        a: 'A free image converter that supports 9 source formats. It is included for Basic and Pro members and free for new members during their first month — it never uses credits.',
     },
     {
         q: 'Is there a limit on file size?',
-        a: 'Free users can upload up to 50MB per file. Plus and Pro users can upload files up to 1GB in size.',
+        a: 'All plans support files up to 50MB per file.',
     },
     {
-        q: 'When do my tokens reset?',
-        a: 'Tokens reset at the start of each billing cycle — monthly for monthly plans, and annually for yearly plans.',
+        q: 'When do my credits reset?',
+        a: 'Credits reset at the start of each billing cycle — monthly for monthly plans, and annually for yearly plans.',
     },
 ]
 
@@ -42,33 +54,31 @@ const freePlan = {
     button: 'Start for Free',
     featured: false,
     features: [
-        { label: 'Limited metadata generation from images', included: true },
-        { label: 'Up to 5 images per batch process', included: true },
-        { label: 'Standard processing speed', included: true },
-        { label: 'API key required (user provides own LLM key)', included: true },
-        { label: 'No fast credits', included: false },
-        { label: 'Basic usage limits (strict rate limits)', included: true },
+        { label: 'Full access to Studio & Image Tools during your first month', included: true },
+        { label: 'Add your own Gemini API key to process images', included: true },
+        { label: 'Metadata for 7 stock platforms', included: true },
+        { label: 'Per-platform CSV export', included: true },
+        { label: 'Included monthly credits', included: false },
+        { label: 'Save to history — premium only', included: false },
     ],
 }
 
 const paidFeatures = {
     BASIC: [
-        { label: 'Higher batch limits', included: true },
-        { label: 'Advanced metadata generation (better AI quality)', included: true },
-        { label: 'Fast credits included (no API key needed)', included: true },
-        { label: 'Relaxed rate limits (fair usage caps)', included: true },
-        { label: 'When fast credits finish, fallback to Groq API key', included: true },
+        { label: 'Metadata Studio with fast credits — no API key needed', included: true },
+        { label: 'Image Tools included — convert 9 image formats free, no credits', included: true },
+        { label: 'Gemini-powered metadata for 7 stock platforms', included: true },
+        { label: 'Per-platform CSV export', included: true },
+        { label: 'Save processed metadata to history', included: true },
         { label: 'Priority processing queue', included: true },
-        { label: 'Commercial usage rights', included: true },
+        { label: 'Fallback to your own Gemini key when credits run out', included: true },
     ],
     PRO: [
-        { label: 'Highest batch limits', included: true },
-        { label: 'Advanced + optimized metadata generation', included: true },
-        { label: 'More fast credits than Plus', included: true },
-        { label: 'No rate limits', included: true },
-        { label: 'Auto fallback to Groq API when credits end', included: true },
+        { label: 'Everything in Basic', included: true },
+        { label: 'More fast credits than Basic', included: true },
+        { label: 'Highest batch and processing limits', included: true },
+        { label: 'No processing rate limits', included: true },
         { label: 'Ultra-priority processing queue', included: true },
-        { label: 'Commercial usage rights', included: true },
     ],
 }
 

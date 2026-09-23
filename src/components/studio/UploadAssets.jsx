@@ -2,11 +2,15 @@ import React, { useRef, useState } from 'react'
 import { UploadCloud } from 'lucide-react'
 
 const FORMAT_CHIPS = [
-    { label: 'JPG', title: 'JPEG image' },
-    { label: 'PNG', title: 'PNG image' },
-    { label: 'EPS', title: 'Vector graphic' },
+    { label: 'JPG', title: 'JPEG image — supported by gemini-3.5-flash-lite' },
+    { label: 'PNG', title: 'PNG image — supported by gemini-3.5-flash-lite' },
+    { label: 'WEBP', title: 'WebP image — supported by gemini-3.5-flash-lite' },
+    { label: 'EPS', title: 'Vector graphic — converted to JPG by our server', converted: true },
+    { label: 'SVG', title: 'Vector graphic — converted to JPG in your browser', converted: true },
     { label: 'Max 50MB', title: 'Files up to 50MB are supported', muted: true },
 ]
+
+const SUPPORTED_FILE_RE = /\.(jpe?g|png|webp|eps|svg)$/i
 
 export default function UploadAssets({ onUpload }) {
     const fileInputRef = useRef(null)
@@ -27,7 +31,7 @@ export default function UploadAssets({ onUpload }) {
 
     const handleFiles = (files) => {
         const validFiles = files.filter((file) => {
-            const isValidType = /\.(jpe?g|png|eps)$/i.test(file.name)
+            const isValidType = SUPPORTED_FILE_RE.test(file.name)
             const isValidSize = file.size <= 50 * 1024 * 1024
             return isValidType && isValidSize
         })
@@ -50,7 +54,7 @@ export default function UploadAssets({ onUpload }) {
                 ref={fileInputRef}
                 type="file"
                 multiple
-                accept=".jpg,.jpeg,.png,.eps"
+                accept=".jpg,.jpeg,.png,.webp,.eps,.svg"
                 onChange={(e) => {
                     handleFiles(Array.from(e.target.files))
                     e.target.value = ''
@@ -74,7 +78,9 @@ export default function UploadAssets({ onUpload }) {
                         className={`px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider ${
                             chip.muted
                                 ? 'bg-slate-100 dark:bg-slate-900/40 text-slate-500 dark:text-slate-400'
-                                : 'bg-primary/10 text-primary'
+                                : chip.converted
+                                    ? 'bg-amber-500/10 text-amber-600 dark:text-amber-400'
+                                    : 'bg-primary/10 text-primary'
                         }`}
                     >
                         {chip.label}

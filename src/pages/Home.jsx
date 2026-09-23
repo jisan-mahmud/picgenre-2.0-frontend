@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { ArrowRight, Upload, Sparkles, CheckCircle, Layers, Key, Terminal, Clock, Star, MessageSquare, Image as ImageIcon, Code, FileText, File, Video, Diamond, Users, Camera, Globe } from 'lucide-react';
+import { ArrowRight, Upload, Sparkles, CheckCircle, Layers, Key, Terminal, Clock, Star, MessageSquare, Image as ImageIcon, Code, Diamond, Users, Camera, Globe, Hash, Play, RefreshCw } from 'lucide-react';
 import { motion, useInView, animate } from 'motion/react'
 import Reveal from '../components/ui/Reveal';
 import { useFeedbackList } from '../hooks/useApi';
@@ -31,13 +31,13 @@ function StatValue({ value }) {
 const stats = [
     { value: '2.4s', label: 'Avg Processing Time', desc: 'Lightning-fast AI analysis' },
     { value: '98%', label: 'Accuracy Rate', desc: 'Production-grade quality' },
-    { value: '50+', label: 'File Formats', desc: 'Images, docs, and more' },
+    { value: '7+', label: 'Platforms', desc: 'Adobe, Shutterstock & more' },
 ]
 
 const steps = [
-    { num: '01', icon: Upload, title: 'Upload', desc: 'Drag and drop your images, EPS files, or documents into the studio.' },
+    { num: '01', icon: Upload, title: 'Upload', desc: 'Drag and drop JPG, PNG, WEBP, EPS, or SVG files into the studio.' },
     { num: '02', icon: Sparkles, title: 'AI Analyzes', desc: 'Gemini AI reads and understands the content of every file automatically.' },
-    { num: '03', icon: CheckCircle, title: 'Get Metadata', desc: 'SEO-optimized title, tags, and description ready to copy or export.' },
+    { num: '03', icon: CheckCircle, title: 'Get Metadata', desc: 'Platform-tailored title, tags, and description ready to copy or export.' },
 ]
 
 export default function Home() {
@@ -72,12 +72,12 @@ export default function Home() {
                         </Reveal>
                         <Reveal delay={100}>
                             <h1 className="text-4xl md:text-6xl font-black leading-tight tracking-tight mb-6">
-                                Generate Perfect Metadata from Any File — <span className="text-primary">Instantly</span>
+                                Generate Perfect Metadata from Images & Vectors — <span className="text-primary">Instantly</span>
                             </h1>
                         </Reveal>
                         <Reveal delay={200}>
                             <p className="text-lg md:text-xl text-slate-600 dark:text-slate-400 max-w-2xl mb-10 leading-relaxed">
-                                Picgenre uses advanced AI to analyze images, SVGs, and documents, creating SEO-ready metadata in seconds.
+                                Picgenre uses advanced AI to analyze images, vectors, and EPS/SVG files, creating SEO-ready metadata in seconds.
                             </p>
                         </Reveal>
                         <Reveal delay={300}>
@@ -119,17 +119,15 @@ export default function Home() {
                                 <p className="text-xs font-bold uppercase tracking-[0.2em] text-primary mb-4">FILE FORMATS</p>
                                 <h2 className="text-3xl md:text-5xl font-black tracking-tight mb-4">Works with What You Have</h2>
                                 <p className="text-lg text-slate-600 dark:text-slate-400 max-w-xl mx-auto">
-                                    Upload any common file format — our AI handles the rest.
+                                    JPG, PNG, and WEBP are read directly by the AI — we convert EPS and SVG for you.
                                 </p>
                             </div>
                         </Reveal>
-                        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-4">
+                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                             {[
-                                { icon: ImageIcon, label: 'PNG / JPG', desc: 'Raster images' },
-                                { icon: Code, label: 'SVG', desc: 'Vector graphics' },
-                                { icon: FileText, label: 'PDF', desc: 'Documents' },
-                                { icon: File, label: 'DOCX', desc: 'Word files' },
-                                { icon: Video, label: 'MP4', desc: 'Video clips' },
+                                { icon: ImageIcon, label: 'JPG · PNG · WEBP', desc: 'Native raster' },
+                                { icon: Code, label: 'SVG', desc: 'Converted in browser' },
+                                { icon: Layers, label: 'EPS', desc: 'Converted by server' },
                             ].map((fmt, i) => (
                                 <Reveal key={i} delay={i * 80}>
                                     <div className="flex flex-col items-center gap-3 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/40 hover:bg-slate-50 dark:hover:bg-slate-900 hover:-translate-y-1 hover:shadow-lg transition-all duration-300 group text-center">
@@ -144,6 +142,51 @@ export default function Home() {
                                 </Reveal>
                             ))}
                         </div>
+                    </div>
+                </section>
+
+                {/* Free Tools */}
+                <section className="py-24 px-6 border-t border-slate-200 dark:border-slate-800">
+                    <div className="max-w-4xl mx-auto text-center flex flex-col items-center gap-6">
+                        <Reveal>
+                            <p className="text-xs font-bold uppercase tracking-[0.2em] text-primary mb-4">FREE TOOLS</p>
+                            <h2 className="text-3xl md:text-5xl font-black tracking-tight mb-4">More Than Just Metadata</h2>
+                            <p className="text-lg text-slate-600 dark:text-slate-400 max-w-xl mx-auto">
+                                Free for Premium members — new members get full access for the first month.
+                            </p>
+                        </Reveal>
+                        <Reveal delay={100}>
+                            <div className="w-full grid grid-cols-1 md:grid-cols-2 gap-5 text-left">
+                                <div className="flex flex-col gap-4 p-7 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/40 hover:bg-slate-50 dark:hover:bg-slate-900 hover:-translate-y-1 hover:shadow-lg transition-all duration-300 group">
+                                    <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center text-primary group-hover:bg-primary group-hover:text-white transition-all duration-300">
+                                        <RefreshCw className="w-6 h-6" />
+                                    </div>
+                                    <div>
+                                        <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-1">Image Tools</h3>
+                                        <p className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
+                                            Convert between 9 formats — JPEG, PNG, WebP, GIF, SVG, and more — right in your browser, with ZIP download.
+                                        </p>
+                                        <a href="/tools" className="inline-flex items-center gap-1.5 text-primary text-sm font-bold mt-3 hover:underline">
+                                            Open Image Tools <ArrowRight className="w-4 h-4" />
+                                        </a>
+                                    </div>
+                                </div>
+                                <div className="flex flex-col gap-4 p-7 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/40 hover:bg-slate-50 dark:hover:bg-slate-900 hover:-translate-y-1 hover:shadow-lg transition-all duration-300 group">
+                                    <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center text-primary group-hover:bg-primary group-hover:text-white transition-all duration-300">
+                                        <Sparkles className="w-6 h-6" />
+                                    </div>
+                                    <div>
+                                        <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-1">Metadata Studio</h3>
+                                        <p className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
+                                            Generate titles, tags, and descriptions for 7 stock platforms and export ready-to-upload CSVs.
+                                        </p>
+                                        <a href="/studio" className="inline-flex items-center gap-1.5 text-primary text-sm font-bold mt-3 hover:underline">
+                                            Open Studio <ArrowRight className="w-4 h-4" />
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </Reveal>
                     </div>
                 </section>
 
@@ -162,9 +205,12 @@ export default function Home() {
                         <div className="grid grid-cols-2 md:grid-cols-4 gap-5">
                             {[
                                 { icon: Diamond, label: 'Adobe Stock', desc: 'Industry standard' },
-                                { icon: Users, label: 'Freepik', desc: 'Design community' },
                                 { icon: Camera, label: 'Shutterstock', desc: 'Global marketplace' },
+                                { icon: Users, label: 'Magnific', desc: 'Design community' },
                                 { icon: Globe, label: 'Vecteezy', desc: 'Creative vectors' },
+                                { icon: Hash, label: '123RF', desc: 'Microstock library' },
+                                { icon: Play, label: 'Pond5', desc: 'Media marketplace' },
+                                { icon: ImageIcon, label: 'Dreamstime', desc: 'Worldwide stock' },
                             ].map((p, i) => (
                                 <Reveal key={i} delay={i * 100}>
                                     <div className="flex flex-col items-center gap-4 p-7 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/40 hover:bg-slate-50 dark:hover:bg-slate-900 hover:-translate-y-1 hover:shadow-lg transition-all duration-300 group text-center">
@@ -264,7 +310,7 @@ export default function Home() {
                                     <div>
                                         <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-1">Export Ready</h3>
                                         <p className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
-                                            Get metadata in JSON, CSV, or XML — ready for any platform or CMS.
+                                            Download a platform-ready CSV — Adobe, Shutterstock, Magnific, and more.
                                         </p>
                                     </div>
                                 </div>

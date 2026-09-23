@@ -5,7 +5,7 @@ import Reveal from '../components/ui/Reveal'
 import { useCreateFeedback } from '../hooks/useApi'
 import Toast from '../components/ui/Toast'
 
-const CONTRIBUTOR_OPTIONS = ['Adobe Stock', 'Freepik', 'Shutterstock']
+const CONTRIBUTOR_OPTIONS = ['Adobe Stock', 'Shutterstock', 'Magnific', 'Vecteezy', '123rf', 'Pond5', 'Dreamstime']
 
 export default function Feedback() {
     const [rating, setRating] = useState(0)
