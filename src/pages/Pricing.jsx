@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import { Coins, Loader2, CheckCircle2, X } from 'lucide-react'
 import { AnimatePresence, motion } from 'motion/react'
 import { useSubscriptionPlans, useSubscribe } from '../hooks/useApi'
@@ -82,51 +82,170 @@ const paidFeatures = {
     ],
 }
 
+const VERIFY_TIMEOUT = 5 * 60 // 5 minutes in seconds
+const RETRY_DELAYS = [10, 20, 40, 60, 90] // seconds between retries
+
+function VerifyingScreen({ onSuccess, onClose, mutateAsync, payload }) {
+    const [secondsLeft, setSecondsLeft] = useState(VERIFY_TIMEOUT)
+    const [attempt, setAttempt] = useState(0)
+    const [timedOut, setTimedOut] = useState(false)
+    const [succeeded, setSucceeded] = useState(false)
+    const timerRef = useRef(null)
+    const retryRef = useRef(null)
+
+    useEffect(() => {
+        timerRef.current = setInterval(() => {
+            setSecondsLeft((s) => {
+                if (s <= 1) {
+                    clearInterval(timerRef.current)
+                    clearTimeout(retryRef.current)
+                    setTimedOut(true)
+                    return 0
+                }
+                return s - 1
+            })
+        }, 1000)
+        return () => { clearInterval(timerRef.current); clearTimeout(retryRef.current) }
+    }, [])
+
+    useEffect(() => {
+        if (timedOut) return
+        const delay = (RETRY_DELAYS[attempt] ?? RETRY_DELAYS.at(-1)) * 1000
+        retryRef.current = setTimeout(async () => {
+            try {
+                await mutateAsync(payload)
+                clearInterval(timerRef.current)
+                setSucceeded(true)
+            } catch {
+                setAttempt((a) => a + 1)
+            }
+        }, delay)
+        return () => clearTimeout(retryRef.current)
+    }, [attempt, timedOut])
+
+    const mins = String(Math.floor(secondsLeft / 60)).padStart(2, '0')
+    const secs = String(secondsLeft % 60).padStart(2, '0')
+    const circumference = 2 * Math.PI * 40
+    const progress = ((VERIFY_TIMEOUT - secondsLeft) / VERIFY_TIMEOUT) * 100
+
+    return (
+        <motion.div
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm"
+            initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.25 }}
+        >
+            <motion.div
+                className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-white/10 rounded-3xl p-10 shadow-2xl flex flex-col items-center gap-6 max-w-sm w-full mx-4 text-center"
+                initial={{ opacity: 0, scale: 0.92, y: 16 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.92, y: 16 }} transition={{ duration: 0.25, ease: 'easeOut' }}
+                onClick={(e) => e.stopPropagation()}
+            >
+                <AnimatePresence mode="wait">
+                    {succeeded ? (
+                        <motion.div key="success" className="flex flex-col items-center gap-6 w-full"
+                            initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.3, ease: 'easeOut' }}
+                        >
+                            <div className="w-20 h-20 rounded-full bg-primary/10 flex items-center justify-center">
+                                <CheckCircle2 className="w-10 h-10 text-primary" />
+                            </div>
+                            <div>
+                                <p className="text-lg font-black text-slate-900 dark:text-white mb-1">Payment Confirmed!</p>
+                                <p className="text-sm text-slate-500 dark:text-slate-400 leading-relaxed">
+                                    Your plan has been activated. Enjoy Picgenre!
+                                </p>
+                            </div>
+                            <button
+                                onClick={onSuccess}
+                                className="w-full py-3 rounded-xl bg-primary text-white font-bold hover:bg-indigo-500 shadow-lg shadow-primary/20 transition-all"
+                            >
+                                Get Started
+                            </button>
+                        </motion.div>
+                    ) : timedOut ? (
+                        <motion.div key="timeout" className="flex flex-col items-center gap-6 w-full"
+                            initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.3 }}
+                        >
+                            <div className="w-20 h-20 rounded-full bg-red-500/10 flex items-center justify-center">
+                                <X className="w-9 h-9 text-red-500" />
+                            </div>
+                            <div>
+                                <p className="text-lg font-black text-slate-900 dark:text-white mb-1">Verification timed out</p>
+                                <p className="text-sm text-slate-500 dark:text-slate-400 leading-relaxed">
+                                    We couldn't verify your payment automatically. Please reach out to support with your Transaction ID.
+                                </p>
+                            </div>
+                            <a href="mailto:support@picgenre.com" className="w-full py-3 rounded-xl bg-primary text-white font-bold hover:bg-indigo-500 shadow-lg shadow-primary/20 transition-all">
+                                Contact Support
+                            </a>
+                            <button onClick={onClose} className="w-full py-3 rounded-xl border border-slate-200 dark:border-white/10 text-slate-600 dark:text-slate-400 font-bold hover:bg-slate-50 dark:hover:bg-white/5 transition-all text-sm">
+                                Close
+                            </button>
+                        </motion.div>
+                    ) : (
+                        <motion.div key="verifying" className="flex flex-col items-center gap-6 w-full"
+                            initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.2 }}
+                        >
+                            <div className="relative w-24 h-24">
+                                <svg className="w-24 h-24 -rotate-90" viewBox="0 0 96 96">
+                                    <circle cx="48" cy="48" r="40" fill="none" stroke="currentColor" strokeWidth="6" className="text-slate-100 dark:text-white/10" />
+                                    <circle
+                                        cx="48" cy="48" r="40" fill="none" stroke="currentColor" strokeWidth="6"
+                                        strokeLinecap="round"
+                                        className="text-primary transition-all duration-1000"
+                                        strokeDasharray={circumference}
+                                        strokeDashoffset={circumference * (progress / 100)}
+                                    />
+                                </svg>
+                                <div className="absolute inset-0 flex items-center justify-center">
+                                    <span className="text-xl font-black text-slate-900 dark:text-white tabular-nums">{mins}:{secs}</span>
+                                </div>
+                            </div>
+                            <div>
+                                <p className="text-lg font-black text-slate-900 dark:text-white mb-1">Verifying payment…</p>
+                                <p className="text-sm text-slate-500 dark:text-slate-400 leading-relaxed">
+                                    Please don't close this window. We're confirming your transaction.
+                                </p>
+                            </div>
+                            <div className="flex items-center gap-2 text-xs text-slate-400 dark:text-slate-500">
+                                <span className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
+                                Checking with payment provider
+                            </div>
+                        </motion.div>
+                    )}
+                </AnimatePresence>
+            </motion.div>
+        </motion.div>
+    )
+}
+
 function CheckoutModal({ plan, isYearly, onClose, onSuccess }) {
     const [paymentMethod, setPaymentMethod] = useState(null)
     const [transactionId, setTransactionId] = useState('')
     const [phoneNumber, setPhoneNumber] = useState('')
-    const { mutateAsync, isPending, isError, error, reset } = useSubscribe()
+    const [verifying, setVerifying] = useState(false)
+    const [submitPayload, setSubmitPayload] = useState(null)
+    const { mutateAsync, isError, error, reset } = useSubscribe()
 
     const price = isYearly ? plan.yearly.price : plan.monthly.price
     const method = paymentMethod ? PAYMENT_METHODS[paymentMethod] : null
 
     const handleSubmit = async () => {
-        try {
-            await mutateAsync({
-                plan_id: plan.id,
-                transaction_id: transactionId.trim(),
-                payment_method: paymentMethod,
-                phone_number: phoneNumber.trim(),
-            })
-            onSuccess()
-        } catch {
-            // error state handled by mutation
+        const payload = {
+            plan_id: plan.id,
+            transaction_id: transactionId.trim(),
+            payment_method: paymentMethod,
+            phone_number: phoneNumber.trim(),
         }
+        setSubmitPayload(payload)
+        setVerifying(true)
     }
 
-    if (isPending) {
+    if (verifying) {
         return (
-            <motion.div
-                className="fixed inset-0 z-50 flex items-center justify-center bg-black/50"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                transition={{ duration: 0.2 }}
-                onClick={onClose}
-            >
-                <motion.div
-                    className="bg-white dark:bg-slate-900 rounded-2xl p-10 shadow-2xl flex flex-col items-center gap-4 max-w-md w-full mx-4"
-                    initial={{ opacity: 0, scale: 0.95 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    exit={{ opacity: 0, scale: 0.95 }}
-                    transition={{ duration: 0.2 }}
-                    onClick={(e) => e.stopPropagation()}
-                >
-                    <Loader2 className="w-10 h-10 text-primary animate-spin" />
-                    <p className="text-slate-600 dark:text-slate-400 font-medium">Processing payment…</p>
-                </motion.div>
-            </motion.div>
+            <VerifyingScreen
+                mutateAsync={mutateAsync}
+                payload={submitPayload}
+                onSuccess={onSuccess}
+                onClose={onClose}
+            />
         )
     }
 
@@ -211,8 +330,16 @@ function CheckoutModal({ plan, isYearly, onClose, onSuccess }) {
                             value={phoneNumber}
                             onChange={(e) => { setPhoneNumber(e.target.value); reset() }}
                             placeholder="e.g. 017XXXXXXXX"
-                            className="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-white/10 bg-white dark:bg-white/5 text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-primary mb-4"
+                            className={`w-full px-4 py-3 rounded-xl border bg-white dark:bg-white/5 text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-primary mb-1 ${
+                                phoneNumber && !/^(?:\+?88)?01[3-9]\d{8}$/.test(phoneNumber)
+                                    ? 'border-red-400 dark:border-red-500'
+                                    : 'border-slate-200 dark:border-white/10'
+                            }`}
                         />
+                        {phoneNumber && !/^(?:\+?88)?01[3-9]\d{8}$/.test(phoneNumber) && (
+                            <p className="text-xs text-red-500 mb-3">Enter a valid BD number (e.g. 017XXXXXXXX)</p>
+                        )}
+                        {(!phoneNumber || /^(?:\+?88)?01[3-9]\d{8}$/.test(phoneNumber)) && <div className="mb-3" />}
 
                         <div className="flex gap-3">
                             <button
@@ -222,7 +349,7 @@ function CheckoutModal({ plan, isYearly, onClose, onSuccess }) {
                                 Back
                             </button>
                             <button
-                                disabled={!transactionId.trim() || !phoneNumber.trim()}
+                                disabled={!transactionId.trim() || !/^(?:\+?88)?01[3-9]\d{8}$/.test(phoneNumber)}
                                 onClick={handleSubmit}
                                 className="flex-1 py-3 rounded-xl bg-primary text-white font-bold hover:bg-indigo-500 shadow-lg shadow-primary/20 transition-all disabled:opacity-40 disabled:cursor-not-allowed"
                             >
@@ -476,7 +603,7 @@ export default function Pricing() {
                         plan={checkout}
                         isYearly={yearly}
                         onClose={handleCloseCheckout}
-                        onSuccess={() => { setSubmitted(true); setCheckout(null) }}
+                        onSuccess={() => { setCheckout(null) }}
                     />
                 )}
             </AnimatePresence>
