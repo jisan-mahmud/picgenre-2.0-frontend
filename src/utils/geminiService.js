@@ -7,21 +7,72 @@ export const PLATFORMS = {
     maxKeywords: 50,
     minTitleWords: 3,
     maxTitleWords: 10,
-    titleMaxLength: 200,
+    titleMaxLength: 70,
+    title: true,
+    description: false,
+    hint: 'Write the title as a plain-language caption describing subject, action and context.',
   },
-  Freepik: {
+  Shutterstock: {
+    minKeywords: 7,
+    maxKeywords: 50,
+    minTitleWords: 5,
+    maxTitleWords: 15,
+    titleMaxLength: 2048,
+    title: false,
+    description: true,
+    descriptionMaxLength: 2048,
+    hint: 'Description must double as the title — a complete, descriptive sentence of at least 5 words, never a keyword list.',
+  },
+  Magnific: {
     minKeywords: 5,
     maxKeywords: 50,
     minTitleWords: 3,
     maxTitleWords: 10,
     titleMaxLength: 100,
+    title: true,
+    description: false,
+    hint: 'Title must be unique across the portfolio and describe the asset clearly. Tags must be singular, single-concept English words.',
   },
-  Shutterstock: {
-    minKeywords: 5,
+  Vecteezy: {
+    minKeywords: 10,
     maxKeywords: 50,
     minTitleWords: 3,
     maxTitleWords: 10,
     titleMaxLength: 200,
+    title: true,
+    description: true,
+    hint: 'Keep description clear and factual, avoid keyword stuffing.',
+  },
+  '123rf': {
+    minKeywords: 7,
+    maxKeywords: 50,
+    minTitleWords: 3,
+    maxTitleWords: 10,
+    titleMaxLength: 180,
+    title: false,
+    description: true,
+    descriptionMaxLength: 180,
+    hint: 'Short factual description of the image, no brand names or trademarks.',
+  },
+  Pond5: {
+    minKeywords: 40,
+    maxKeywords: 50,
+    minTitleWords: 3,
+    maxTitleWords: 10,
+    titleMaxLength: 200,
+    title: true,
+    description: true,
+    hint: 'Title should convey exactly what is depicted. Description should include time, location, and scene details.',
+  },
+  Dreamstime: {
+    minKeywords: 7,
+    maxKeywords: 50,
+    minTitleWords: 3,
+    maxTitleWords: 10,
+    titleMaxLength: 250,
+    title: true,
+    description: true,
+    hint: 'Detailed description that clearly depicts the image content; title must be a descriptive caption.',
   },
 }
 
@@ -99,19 +150,64 @@ function formatGeminiError(error, keySource) {
   return short || 'Gemini API error.'
 }
 
+function buildPrompt(platform, customPrompt, mimeType) {
+  const { minKeywords, maxKeywords, minTitleWords, maxTitleWords, title, description, descriptionMaxLength, hint } = platform
+
+  const parts = []
+  if (title) {
+    parts.push(`Title: ${minTitleWords}-${maxTitleWords} words, no symbols or colons.`)
+  }
+  parts.push(`Keyword tags: ${minKeywords}-${maxKeywords} tags.`)
+  if (description) {
+    let desc = 'Description: 1-3 sentences.'
+    if (descriptionMaxLength) desc += ` Keep it under ${descriptionMaxLength} characters.`
+    parts.push(desc)
+  }
+  if (hint) parts.push(hint)
+  if (mimeType === 'image/png') parts.push('Transparent background.')
+  if (customPrompt) parts.push(customPrompt)
+
+  return parts.join(' ')
+}
+
+function buildSchema(platform, minTitleWords, maxTitleWords, minKeywords, maxKeywords) {
+  const { title, description } = platform
+
+  const properties = {}
+  const required = []
+
+  if (title) {
+    properties.title = {
+      type: Type.STRING,
+      description: `Title, ${minTitleWords}-${maxTitleWords} words, no symbols/colons`,
+    }
+    required.push('title')
+  }
+  properties.tags = {
+    type: Type.ARRAY,
+    description: `${minKeywords}-${maxKeywords} keyword tags`,
+    items: { type: Type.STRING },
+  }
+  required.push('tags')
+  if (description) {
+    properties.description = {
+      type: Type.STRING,
+      description: 'Image description',
+    }
+    required.push('description')
+  }
+
+  return { type: Type.OBJECT, properties, required }
+}
+
 export async function analyzeImage(imageFile, platform, customPrompt, apiKey, settings = {}, keySource = null, maxRetries = MAX_RETRIES) {
   const { base64, mimeType } = await prepareImageForGemini(imageFile)
   const base = PLATFORMS[platform] || PLATFORMS[DEFAULT_PLATFORM]
-  const { minKeywords, maxKeywords, minTitleWords, maxTitleWords } = { ...base, ...settings }
+  const cfg = { ...base, ...settings }
 
   const ai = getClient(apiKey)
-
-  const prompt =
-    `Title ${minTitleWords}-${maxTitleWords} words, no symbols or colons. ` +
-    `${minKeywords}-${maxKeywords} keyword tags. ` +
-    '1-3 sentence description.' +
-    (mimeType === 'image/png' ? ' Transparent background.' : '') +
-    (customPrompt ? ` ${customPrompt}` : '')
+  const prompt = buildPrompt(cfg, customPrompt, mimeType)
+  const responseSchema = buildSchema(cfg, cfg.minTitleWords, cfg.maxTitleWords, cfg.minKeywords, cfg.maxKeywords)
 
   let lastError = null
 
@@ -139,25 +235,7 @@ export async function analyzeImage(imageFile, platform, customPrompt, apiKey, se
         ],
         config: {
           responseMimeType: 'application/json',
-          responseSchema: {
-            type: Type.OBJECT,
-            properties: {
-              title: {
-                type: Type.STRING,
-                description: `Title, ${minTitleWords}-${maxTitleWords} words, no symbols/colons`,
-              },
-              tags: {
-                type: Type.ARRAY,
-                description: 'Keyword tags',
-                items: { type: Type.STRING },
-              },
-              description: {
-                type: Type.STRING,
-                description: 'Image description',
-              },
-            },
-            required: ['title', 'tags', 'description'],
-          },
+          responseSchema,
         },
         abortSignal: controller.signal,
       })

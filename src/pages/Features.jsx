@@ -1,5 +1,5 @@
 import React from 'react'
-import { ArrowRight, Upload, Sparkles, CheckCircle, Layers, Key, Terminal, Clock, Tag, Image as ImageIcon, Code, FileText, File, Video, Diamond, Users, Camera, Globe, BookmarkPlus, Zap, MessageSquare } from 'lucide-react'
+import { ArrowRight, Upload, Sparkles, CheckCircle, Layers, Key, Terminal, Clock, Tag, Image as ImageIcon, Code, FileText, File, Video, Diamond, Users, Camera, Globe, Hash, Play, BookmarkPlus, Zap, MessageSquare } from 'lucide-react'
 import Reveal from '../components/ui/Reveal'
 
 const coreFeatures = [
@@ -8,7 +8,7 @@ const coreFeatures = [
     { icon: Terminal, title: 'Flexible Export', desc: 'Export metadata as CSV, JSON, or XML, ready for any platform or CMS.' },
     { icon: Clock, title: 'Lightning Speed', desc: 'Average 2.4 seconds per file, so results are ready before your coffee cools.' },
     { icon: ImageIcon, title: 'Wide Format Support', desc: 'Images, vectors, documents, and video — 50+ formats accepted.' },
-    { icon: Tag, title: 'Platform-Ready Output', desc: 'Titles, tags, and descriptions formatted for Adobe Stock, Shutterstock, and Freepik.' },
+    { icon: Tag, title: 'Platform-Ready Output', desc: 'Titles, tags, and descriptions formatted for Adobe Stock, Shutterstock, Magnific, and more.' },
 ]
 
 const formats = [
@@ -22,14 +22,17 @@ const formats = [
 
 const platforms = [
     { icon: Diamond, label: 'Adobe Stock' },
-    { icon: Users, label: 'Freepik' },
     { icon: Camera, label: 'Shutterstock' },
+    { icon: Users, label: 'Magnific' },
     { icon: Globe, label: 'Vecteezy' },
+    { icon: Hash, label: '123RF' },
+    { icon: Play, label: 'Pond5' },
+    { icon: ImageIcon, label: 'Dreamstime' },
 ]
 
 const premiumFeatures = [
     { icon: BookmarkPlus, title: 'Save to History', desc: 'Keep a permanent record of generated metadata CSVs and download them anytime.' },
-    { icon: Zap, title: 'Premium Credits', desc: 'Plus and Pro plans include fast shared credits — no API key required.' },
+    { icon: Zap, title: 'Premium Credits', desc: 'Basic and Pro plans include fast shared credits — no API key required.' },
     { icon: MessageSquare, title: 'Custom AI Prompts', desc: 'Tailor metadata generation with your own prompt instructions per run.' },
 ]
 

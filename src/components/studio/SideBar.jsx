@@ -1,12 +1,16 @@
 import React from 'react'
-import { Diamond, Users, Camera, HelpCircle, Info, StopCircle, Sparkles, Settings2, RotateCcw } from 'lucide-react'
+import { Diamond, Users, Camera, HelpCircle, Info, StopCircle, Sparkles, Settings2, RotateCcw, Layers, Hash, Play, Image as ImageIcon } from 'lucide-react'
 import CurrentSubscription from './sidebar/CurrentSubscription'
 import { PLATFORMS } from '../../utils/geminiService'
 
 const PLATFORM_ICONS = {
     'Adobe Stock': Diamond,
-    'Freepik': Users,
+    'Magnific': Users,
     'Shutterstock': Camera,
+    'Vecteezy': Layers,
+    '123rf': Hash,
+    'Pond5': Play,
+    'Dreamstime': ImageIcon,
 }
 
 const SettingInput = ({ label, value, onChange, min = 1, max, disabled }) => (
@@ -47,6 +51,7 @@ export default function SideBar({
     onReset,
 }) {
     const progress = totalCount > 0 ? Math.round((processedCount / totalCount) * 100) : 0
+    const platformConfig = PLATFORMS[platform] || PLATFORMS['Adobe Stock']
 
     return (
 <div className="lg:col-span-5 self-start sticky top-24 max-h-[calc(100vh-7rem)] flex flex-col gap-6">
@@ -109,6 +114,9 @@ export default function SideBar({
                                             >
                                                 <Icon className="w-6 h-6" />
                                                 <span className="text-[11px] font-bold uppercase tracking-tight text-center">{name}</span>
+                                                {PLATFORMS[name]?.description && (
+                                                    <span className="text-[8px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">+ Description</span>
+                                                )}
                                             </button>
                                         )
                                     })}
@@ -144,9 +152,13 @@ export default function SideBar({
                                 <div className="grid grid-cols-2 gap-3">
                                     <SettingInput label="Min Keywords" value={settings?.minKeywords} onChange={(v) => onSettingsChange?.('minKeywords', v)} min={1} max={200} disabled={isProcessing} />
                                     <SettingInput label="Max Keywords" value={settings?.maxKeywords} onChange={(v) => onSettingsChange?.('maxKeywords', v)} min={1} max={200} disabled={isProcessing} />
-                                    <SettingInput label="Min Title Words" value={settings?.minTitleWords} onChange={(v) => onSettingsChange?.('minTitleWords', v)} min={1} max={50} disabled={isProcessing} />
-                                    <SettingInput label="Max Title Words" value={settings?.maxTitleWords} onChange={(v) => onSettingsChange?.('maxTitleWords', v)} min={1} max={50} disabled={isProcessing} />
-                                    <SettingInput label="Title Max Length" value={settings?.titleMaxLength} onChange={(v) => onSettingsChange?.('titleMaxLength', v)} min={10} max={300} disabled={isProcessing} />
+                                    {platformConfig.title && (
+                                        <>
+                                            <SettingInput label="Min Title Words" value={settings?.minTitleWords} onChange={(v) => onSettingsChange?.('minTitleWords', v)} min={1} max={50} disabled={isProcessing} />
+                                            <SettingInput label="Max Title Words" value={settings?.maxTitleWords} onChange={(v) => onSettingsChange?.('maxTitleWords', v)} min={1} max={50} disabled={isProcessing} />
+                                            <SettingInput label="Title Max Length" value={settings?.titleMaxLength} onChange={(v) => onSettingsChange?.('titleMaxLength', v)} min={10} max={300} disabled={isProcessing} />
+                                        </>
+                                    )}
                                 </div>
                             </div>
                         </div>

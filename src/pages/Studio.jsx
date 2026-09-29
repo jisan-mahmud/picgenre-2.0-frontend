@@ -13,12 +13,13 @@ import CreditsExhaustedModal from '../components/studio/CreditsExhaustedModal'
 import LockedFeatureCard from '../components/LockedFeatureCard'
 import { analyzeImage, DEFAULT_PLATFORM, PLATFORMS } from '../utils/geminiService'
 import { convertEpsToJpg } from '../utils/convertEps'
+import { convertFile } from '../utils/imageConvert'
 import { generateCSV, downloadCSV } from '../utils/csvExport'
 import { useCurrentSubscription } from '../hooks/useApi'
 
 const makePreview = (file) => {
     const ext = file.name.split('.').pop().toLowerCase()
-    if (['jpg', 'jpeg', 'png'].includes(ext)) {
+    if (['jpg', 'jpeg', 'png', 'webp', 'svg'].includes(ext)) {
         return URL.createObjectURL(file)
     }
     return null
@@ -225,6 +226,8 @@ export default function Studio() {
                 let fileToAnalyze = item.file
                 if (item.file.name.toLowerCase().endsWith('.eps')) {
                     fileToAnalyze = await convertEpsToJpg(item.file)
+                } else if (item.file.name.toLowerCase().endsWith('.svg')) {
+                    fileToAnalyze = await convertFile(item.file, 'JPEG')
                 }
 
                 const result = await analyzeImage(fileToAnalyze, platform, customPrompt, activeKey.apiKey, settings, activeKey.source)
@@ -319,9 +322,10 @@ export default function Studio() {
             setToast({ message: 'No processed metadata to export', type: 'error' })
             return
         }
-        const csv = generateCSV(processedFiles)
+        const csv = generateCSV(processedFiles, platform)
         const date = new Date().toISOString().slice(0, 10)
-        downloadCSV(csv, `picgenre-metadata-${date}.csv`)
+        const slug = platform.toLowerCase().replace(/[^a-z0-9]+/g, '-')
+        downloadCSV(csv, `picgenre-${slug}-${date}.csv`)
         setToast({ message: `Exported ${processedFiles.length} files to CSV`, type: 'success' })
     }
 
@@ -331,7 +335,7 @@ export default function Studio() {
             return
         }
         try {
-            const csv = generateCSV(processedFiles)
+            const csv = generateCSV(processedFiles, platform)
             const formData = new FormData()
             formData.append('file', new Blob([csv], { type: 'text/csv' }), `picgenre-metadata-${new Date().toISOString().slice(0, 10)}.csv`)
             formData.append('file_count', String(processedFiles.length))
